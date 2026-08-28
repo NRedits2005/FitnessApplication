@@ -1,0 +1,100 @@
+{% extends 'workout/base.html' %}
+{% load static %}
+
+{% block title %}Active Session · {{ entry.exercise.name }} · FITNESS+{% endblock %}
+
+{% block content %}
+<section class="session-card card" id="session"
+  data-complete-url="{% url 'workout:complete_set' entry.id %}"
+  data-complete-redirect="{% url 'workout:workout_complete' entry.workout.id %}"
+  data-work="{{ entry.exercise_seconds }}"
+  data-rest="{{ entry.rest_seconds }}"
+  data-sets="{{ entry.sets_planned }}"
+  data-current="{{ next_set }}">
+
+  <form class="csrf-token" style="display:none;">{% csrf_token %}</form>
+
+  <!-- Left: Visual Demonstration -->
+  <div class="session-media-column">
+    <div class="session-photo-wrapper">
+      <img src="{{ entry.exercise.image }}" alt="Photo for {{ entry.exercise.name }}" class="exercise-photo" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' entry.exercise.id %}';">
+      <div class="state-badge-overlay">
+        <span class="state-badge" id="state-label">WORK</span>
+      </div>
+    </div>
+    <div class="session-instructions-card">
+      <h4>Movement Form</h4>
+      <p class="instructions">{{ entry.exercise.instructions }}</p>
+    </div>
+  </div>
+
+  <!-- Right: Active Telemetry & Timer -->
+  <div class="session-content">
+    <div class="session-header">
+      <p class="eyebrow">{{ entry.exercise.body_part|upper }} · {{ entry.exercise.category|upper }}</p>
+      <h1 class="exercise-title">{{ entry.exercise.name }}</h1>
+    </div>
+
+    <!-- Metrics Row -->
+    <div class="session-metrics-grid">
+      <div class="metric-card">
+        <span class="metric-label">CURRENT SET</span>
+        <strong class="metric-value set-count" id="set-count">Set {{ next_set }} of {{ entry.sets_planned }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">TARGET REPETITIONS</span>
+        <strong class="metric-value big-number">{{ entry.reps_planned }} <span>repetitions</span></strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">WEIGHT LOAD</span>
+        <strong class="metric-value weight-label">
+          {% if entry.exercise.is_bodyweight %}
+            Bodyweight
+          {% else %}
+            {{ entry.weight|floatformat:'-2' }} kg
+          {% endif %}
+        </strong>
+      </div>
+    </div>
+
+    <div class="session-set-inputs" aria-label="Current set details">
+      <label>
+        Repetitions completed
+        <input id="set-reps" type="number" min="1" max="500" value="{{ entry.reps_planned }}">
+      </label>
+      {% if not entry.exercise.is_bodyweight %}
+      <label>
+        Weight used (kg)
+        <input id="set-weight" type="number" min="0" max="99999.99" step="0.01" value="{{ entry.weight|default_if_none:'0' }}">
+      </label>
+      {% endif %}
+    </div>
+
+    <!-- Progress Dots -->
+    <div class="progress-section">
+      <span class="progress-label">Workout Progression</span>
+      <div class="progress">
+        {% for i in ''|center:entry.sets_planned %}
+          <i class="{% if forloop.counter < next_set %}done{% elif forloop.counter == next_set %}current{% endif %}" title="Set {{ forloop.counter }}"></i>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Main Digital Timer Panel -->
+    <div class="timer-panel">
+      <div class="timer-display-wrap">
+        <strong id="timer-display" class="timer-digits">00:00</strong>
+      </div>
+      <p id="timer-message" class="timer-message">Complete your repetitions during this set.</p>
+
+      <div class="timer-controls">
+        <button type="button" class="button secondary-button timer-btn" id="pause-timer">Pause</button>
+        <button type="button" class="button secondary-button timer-btn skip-btn" id="skip-set">Skip set</button>
+        <button type="button" class="button primary-button timer-btn" id="skip-rest" hidden>Skip rest</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="{% static 'workout/js/timer.js' %}"></script>
+{% endblock %}

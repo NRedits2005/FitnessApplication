@@ -1,0 +1,85 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FITNESS+ · Professional Fitness Platform{% endblock %}</title>
+  <meta name="description" content="FITNESS+ is a modern, professional fitness platform for personalized workouts, exercise library, nutrition plans, and progress tracking.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'workout/css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'workout/css/auth.css' %}">
+  <link rel="stylesheet" href="{% static 'workout/css/timer.css' %}">
+  <link rel="stylesheet" href="{% static 'workout/css/start.css' %}">
+    <link rel="stylesheet" href="{% static 'workout/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'workout/css/diet.css' %}">
+  <link rel="stylesheet" href="{% static 'workout/css/reference.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="{% url 'workout:dashboard' %}" class="brand">FITNESS<span>+</span></a>
+      {% if user.is_authenticated %}
+      <nav class="desktop-nav" id="main-nav">
+        <a href="{% url 'workout:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{% url 'workout:start_workout' %}" class="{% if request.resolver_match.url_name == 'start_workout' or request.resolver_match.url_name == 'workout_session' or request.resolver_match.url_name == 'workout_complete' %}active{% endif %}">Workout</a>
+        <a href="{% url 'workout:diet' %}" class="{% if request.resolver_match.url_name == 'diet' %}active{% endif %}">Diet</a>
+        <a href="{% url 'workout:progress' %}" class="{% if request.resolver_match.url_name == 'progress' or request.resolver_match.url_name == 'history' or request.resolver_match.url_name == 'workout_history_detail' %}active{% endif %}">Progress &amp; Analytics</a>
+        <a href="{% url 'workout:exercise_library' %}" class="{% if request.resolver_match.url_name == 'exercise_library' or request.resolver_match.url_name == 'exercise_detail' %}active{% endif %}">Exercises</a>
+        <a href="{% url 'workout:profile' %}" class="{% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">Profile</a>
+        <form method="post" action="{% url 'workout:logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button class="nav-button" type="submit">Logout</button>
+        </form>
+        <a href="{% url 'workout:profile' %}" class="avatar-link" title="My Profile">
+          {% with prof=request.user.fitness_profile %}
+            {% if prof.profile_image %}
+              <img class="header-avatar" src="{{ prof.profile_image.url }}" alt="Profile avatar">
+            {% else %}
+              <img class="header-avatar" src="{% static 'workout/images/fitness-plus/profile_user.jpg' %}" alt="Profile avatar">
+            {% endif %}
+          {% endwith %}
+        </a>
+      </nav>
+      <button class="mobile-menu-toggle" id="mobile-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      {% endif %}
+    </div>
+    {% if user.is_authenticated %}
+    <nav class="mobile-nav" id="mobile-nav" hidden>
+      <a href="{% url 'workout:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="{% url 'workout:start_workout' %}" class="{% if request.resolver_match.url_name == 'start_workout' or request.resolver_match.url_name == 'workout_session' %}active{% endif %}">Workout</a>
+      <a href="{% url 'workout:diet' %}" class="{% if request.resolver_match.url_name == 'diet' %}active{% endif %}">Diet</a>
+      <a href="{% url 'workout:progress' %}" class="{% if request.resolver_match.url_name == 'progress' or request.resolver_match.url_name == 'history' or request.resolver_match.url_name == 'workout_history_detail' %}active{% endif %}">Progress &amp; Analytics</a>
+      <a href="{% url 'workout:exercise_library' %}" class="{% if request.resolver_match.url_name == 'exercise_library' %}active{% endif %}">Exercises</a>
+      <a href="{% url 'workout:profile' %}" class="{% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">Profile</a>
+      <form method="post" action="{% url 'workout:logout' %}" class="mobile-logout-form">
+        {% csrf_token %}
+        <button class="nav-button mobile-logout-btn" type="submit">Logout</button>
+      </form>
+    </nav>
+    {% endif %}
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    const toggle = document.getElementById('mobile-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    if (toggle && mobileNav) {
+      toggle.addEventListener('click', () => {
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', !isExpanded);
+        mobileNav.hidden = isExpanded;
+        toggle.classList.toggle('open');
+      });
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

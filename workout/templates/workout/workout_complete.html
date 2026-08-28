@@ -1,0 +1,77 @@
+{% extends 'workout/base.html' %}
+
+{% block title %}{% if history_detail %}Workout Summary · FITNESS+{% else %}Workout Complete! · FITNESS+{% endif %}{% endblock %}
+
+{% block content %}
+<section class="complete-page-container">
+  <div class="card complete-card">
+    <div class="completion-badge-wrap">
+      <div class="completion-mark">✓</div>
+    </div>
+    
+    <p class="eyebrow">{% if history_detail %}WORKOUT SUMMARY{% else %}WORKOUT COMPLETE!{% endif %}</p>
+    <h1 class="completion-title">{% if history_detail %}{{ workout.date|date:'F j, Y' }}{% else %}Nice work.{% endif %}</h1>
+    <p class="completion-subtitle">{% if history_detail %}Summary of your completed training session.{% else %}You successfully finished your scheduled workout session.{% endif %}</p>
+
+    <!-- Workout Summary Key Numbers -->
+    <div class="complete-summary-grid">
+      <div class="summary-stat-box">
+        <span class="stat-box-label">EXERCISES</span>
+        <strong class="stat-box-num">{{ entries|length }}</strong>
+      </div>
+      <div class="summary-stat-box">
+        <span class="stat-box-label">COMPLETED SETS</span>
+        <strong class="stat-box-num">{{ completed_sets }}</strong>
+      </div>
+      <div class="summary-stat-box">
+        <span class="stat-box-label">TOTAL REPETITIONS</span>
+        <strong class="stat-box-num">{{ total_reps }}</strong>
+      </div>
+      {% if workout.duration_seconds is not None %}
+      <div class="summary-stat-box">
+        <span class="stat-box-label">DURATION</span>
+        <strong class="stat-box-num">{{ workout.duration_seconds }}<small>s</small></strong>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Achievement Highlight: Total Weight Lifted -->
+    {% if total_volume %}
+    <div class="volume-achievement-card">
+      <div class="volume-icon">🏋️</div>
+      <div class="volume-text">
+        <span class="volume-label">TOTAL WEIGHT LIFTED</span>
+        <strong class="volume-value">{{ total_volume|floatformat:'-2' }} kg</strong>
+        <span class="volume-note">Calculated across all completed sets</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Exercises Breakdown -->
+    <div class="complete-exercises-list">
+      <h3>Session Breakdown</h3>
+      {% for entry in entries %}
+      <article class="complete-exercise-item">
+        <div class="item-main">
+          <h4>{{ entry.exercise.name }}</h4>
+          <p>{{ entry.sets_planned }} sets · {{ entry.reps_planned }} repetitions{% if entry.exercise.is_bodyweight %} · Bodyweight{% else %} · {{ entry.exercise.get_equipment_type_display }}: {{ entry.weight|floatformat:'-2' }} kg{% endif %}</p>
+        </div>
+        <div class="item-badge">
+          {% if entry.exercise.is_bodyweight %}
+            <span class="badge badge-subtle">Bodyweight</span>
+          {% else %}
+            <span class="badge badge-primary">{{ entry.volume|floatformat:'-2' }} kg volume</span>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="complete-actions">
+      <a class="button wide primary-cta" href="{% if history_detail %}{% url 'workout:history' %}{% else %}{% url 'workout:dashboard' %}{% endif %}">
+        {% if history_detail %}Back to progress{% else %}Back to Dashboard{% endif %}
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

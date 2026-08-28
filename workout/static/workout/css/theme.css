@@ -1,0 +1,273 @@
+/* Theme and design system for FITNESS+ */
+:root {
+  --primary: #087F5B;           /* Deep Fitness Green */
+  --primary-dark: #066A4C;
+  --navy: #0B1F33;             /* Deep Navy */
+  --background: #F7F9F8;       /* Very Light Gray */
+  --surface: #FFFFFF;          /* Card / form background */
+  --muted: #64748B;            /* Slate Gray */
+  --border: #DDE5E1;           /* Soft Gray */
+  --success: #168A65;
+  --warning: #D98C10;
+  --danger: #C0392B;
+  /* Spacing */
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  /* Radii */
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Global typography */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--background);
+  color: var(--navy);
+  margin: 0;
+  line-height: 1.5;
+}
+
+h1, .title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: var(--spacing-24);
+}
+
+h2, .section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-top: var(--spacing-24);
+  margin-bottom: var(--spacing-12);
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  font-family: inherit;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: var(--radius-8);
+  padding: var(--spacing-12) var(--spacing-24);
+  transition: background-color .2s, box-shadow .2s;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--navy);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--background);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+
+/* Forms */
+input, select, textarea {
+  width: 100%;
+  padding: var(--spacing-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+  color: var(--navy);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(8,127,91,0.2);
+}
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-12);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-24);
+  margin-bottom: var(--spacing-24);
+}
+
+/* Navigation */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: var(--spacing-12) var(--spacing-24);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-decoration: none;
+}
+
+.desktop-nav a,
+.mobile-nav a {
+  margin-right: var(--spacing-16);
+  text-decoration: none;
+  color: var(--navy);
+  font-weight: 500;
+  position: relative;
+  padding: var(--spacing-8) var(--spacing-12);
+}
+
+.desktop-nav a.active,
+.mobile-nav a.active {
+  color: #fff;
+  background: var(--primary);
+  border-radius: var(--radius-8);
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  color: var(--navy);
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--spacing-8) var(--spacing-12);
+}
+
+/* Mobile menu */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {display: none;}
+  .mobile-menu-toggle {display: block;}
+}
+
+/* Profile image */
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+/* Option cards (gender, location) */
+.option-card {
+  display: inline-block;
+  padding: var(--spacing-12) var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  cursor: pointer;
+  margin: var(--spacing-8);
+}
+
+.option-card.selected {
+  border-color: var(--primary);
+  background: rgba(8,127,91,0.1);
+}
+
+/* Exercise library grid */
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--spacing-24);
+}
+
+.exercise-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.exercise-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.exercise-content {
+  padding: var(--spacing-12);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tag {
+  background: var(--background);
+  color: var(--navy);
+  padding: var(--spacing-4) var(--spacing-8);
+  border-radius: var(--radius-8);
+  font-size: 0.85rem;
+  margin-right: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  display: inline-block;
+}
+
+.filter-btn {
+  background: #fff;
+  color: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-8);
+  padding: var(--spacing-8) var(--spacing-16);
+  margin: var(--spacing-4);
+  cursor: pointer;
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Timer display */
+.timer {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Responsive utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-24);
+}

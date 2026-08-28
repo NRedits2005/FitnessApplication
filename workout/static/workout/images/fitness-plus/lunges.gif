@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad_lunges" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006948" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#76dcff" stop-opacity="0.22" />
+    </linearGradient>
+    <radialGradient id="glow_lunges" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#85f8c4" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#85f8c4" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <!-- Background Card Canvas -->
+  <rect width="480" height="360" rx="20" fill="#f3f4f5" />
+  <rect width="480" height="360" rx="20" fill="url(#grad_lunges)" />
+  <circle cx="240" cy="180" r="130" fill="url(#glow_lunges)" />
+  
+  <!-- Grid Accent Lines -->
+  <line x1="40" y1="180" x2="440" y2="180" stroke="#bccac0" stroke-width="1" stroke-dasharray="6,6" opacity="0.4" />
+  <line x1="240" y1="40" x2="240" y2="320" stroke="#bccac0" stroke-width="1" stroke-dasharray="6,6" opacity="0.4" />
+
+  <!-- Exercise Artwork -->
+  
+            <!-- Head & Torso tall -->
+            <circle cx="220" cy="100" r="18" fill="#e1e3e4" />
+            <path d="M 220 120 L 220 200" stroke="#191c1d" stroke-width="24" stroke-linecap="round" />
+            <!-- Front Leg 90 deg -->
+            <path d="M 220 200 L 280 220 L 280 280" fill="none" stroke="#00855d" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Back Leg 90 deg hovering -->
+            <path d="M 220 200 L 160 220 L 150 280" fill="none" stroke="#525d6c" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Dumbbells at side -->
+            <circle cx="210" cy="180" r="10" fill="#85f8c4" />
+        
+
+  <!-- Badge / Tag -->
+  <g transform="translate(24, 24)">
+    <rect width="130" height="32" rx="16" fill="#ffffff" filter="drop-shadow(0px 2px 8px rgba(0,0,0,0.08))" />
+    <text x="65" y="21" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#006948" text-anchor="middle">Quads</text>
+  </g>
+</svg>

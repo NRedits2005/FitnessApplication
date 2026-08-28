@@ -1,0 +1,42 @@
+{% extends 'workout/base.html' %}
+
+{% block title %}Daily Diet Plan · FITNESS+{% endblock %}
+
+{% block content %}
+<section class="diet-page-head page-intro">
+  <p class="eyebrow">PERSONALIZED NUTRITION GUIDANCE</p>
+  <h1>{{ date|date:'l' }}'s Diet Plan</h1>
+  <p class="subtitle">Tailored nutrition ideas aligned with your <strong>{{ profile.get_goal_display }}</strong> fitness goals.</p>
+
+  <div class="diet-day-controls">
+    <a class="button secondary-button" href="?offset={{ offset|add:'-1' }}">← Previous Day</a>
+    <a class="button {% if offset == 0 %}primary-cta{% else %}secondary-button{% endif %}" href="{% url 'workout:diet' %}">Today</a>
+    <a class="button secondary-button" href="?offset={{ offset|add:'1' }}">Next Day →</a>
+  </div>
+</section>
+
+<section class="diet-grid diet-grid-full">
+  {% for meal in meals %}
+  <article class="meal-card card">
+    <div class="meal-image-wrap">
+      <img src="{{ meal.image }}" alt="{{ meal.name }}" onerror="this.onerror=null;this.src='{% url 'workout:diet_meal_fallback' meal.id %}';">
+      <span class="meal-type-badge meal-type-{{ meal.meal_type }}">{{ meal.get_meal_type_display }}</span>
+    </div>
+    <div class="meal-copy">
+      <h2>{{ meal.name }}</h2>
+      <p class="meal-desc">{{ meal.description }}</p>
+    </div>
+  </article>
+  {% empty %}
+  <div class="empty-state card full-grid-width">
+    <h3>Meal plan in preparation</h3>
+    <p>Your nutrition plan is being prepared. Check back shortly.</p>
+  </div>
+  {% endfor %}
+</section>
+
+<div class="diet-note-card card">
+  <div class="tip-icon">🥗</div>
+  <p class="diet-note">These meal suggestions are general wellness guidance created to complement your training routine. Individual nutrition requirements vary based on personal health and daily activity levels.</p>
+</div>
+{% endblock %}

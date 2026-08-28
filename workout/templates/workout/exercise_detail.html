@@ -1,0 +1,119 @@
+{% extends 'workout/base.html' %}
+
+{% block title %}{{ exercise.name }} · Exercise Details · FITNESS+{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <a class="back-link" href="{% url 'workout:exercise_library' %}">← Back to Exercise Library</a>
+</div>
+
+<section class="exercise-detail-layout">
+  <div class="exercise-detail-media card">
+    <img class="detail-photo" src="{{ exercise.image }}" alt="Exercise visual for {{ exercise.name }}" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' exercise.id %}';">
+    <div class="media-badges">
+      <span class="badge badge-primary">{{ exercise.category }}</span>
+      <span class="badge badge-secondary">{{ exercise.body_part }}</span>
+      {% if exercise.difficulty %}<span class="badge wf-detail-badge-{{ exercise.difficulty }}">{{ exercise.get_difficulty_display }}</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="exercise-detail-info card">
+    <div class="detail-header">
+      <p class="eyebrow">{{ exercise.body_part|upper }}</p>
+      <h1>{{ exercise.name }}</h1>
+      {% if exercise.is_beginner_friendly %}<span class="wf-beginner-tag" style="margin-bottom:12px;display:inline-block;">✓ Beginner-friendly</span>{% endif %}
+    </div>
+
+    <div class="detail-meta-grid">
+      <div class="meta-card">
+        <span class="meta-label">Equipment</span>
+        <strong class="meta-value">{{ exercise.get_equipment_type_display }}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Difficulty</span>
+        <strong class="meta-value">{% if exercise.difficulty %}{{ exercise.get_difficulty_display }}{% else %}{{ exercise.category }}{% endif %}</strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Your Setup</span>
+        <strong class="meta-value {% if compatible %}text-success{% else %}text-muted{% endif %}">
+          {% if compatible %}Compatible ✓{% else %}Not in setup{% endif %}
+        </strong>
+      </div>
+      <div class="meta-card">
+        <span class="meta-label">Recommendation</span>
+        <strong class="meta-value {% if recommended %}text-success{% else %}text-muted{% endif %}">
+          {% if recommended %}Recommended ✓{% else %}Standard{% endif %}
+        </strong>
+      </div>
+    </div>
+
+    {# ── Recommended Workout Parameters ── #}
+    {% if exercise.recommended_sets or exercise.recommended_reps or exercise.recommended_duration or exercise.recommended_rest %}
+    <div class="wf-recommended-params">
+      <h3>Recommended Workout</h3>
+      <div class="wf-params-grid">
+        {% if exercise.recommended_sets %}
+        <div class="wf-param-card">
+          <span class="wf-param-icon">🔄</span>
+          <span class="wf-param-label">Sets</span>
+          <strong class="wf-param-value">{{ exercise.recommended_sets }}</strong>
+        </div>
+        {% endif %}
+        {% if exercise.recommended_reps %}
+        <div class="wf-param-card">
+          <span class="wf-param-icon">💪</span>
+          <span class="wf-param-label">Reps</span>
+          <strong class="wf-param-value">{{ exercise.recommended_reps }}</strong>
+        </div>
+        {% endif %}
+        {% if exercise.recommended_duration %}
+        <div class="wf-param-card">
+          <span class="wf-param-icon">⏱️</span>
+          <span class="wf-param-label">Duration</span>
+          <strong class="wf-param-value">{{ exercise.recommended_duration }}</strong>
+        </div>
+        {% endif %}
+        {% if exercise.recommended_rest %}
+        <div class="wf-param-card">
+          <span class="wf-param-icon">😌</span>
+          <span class="wf-param-label">Rest</span>
+          <strong class="wf-param-value">{{ exercise.recommended_rest }}</strong>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="detail-section-block">
+      <h3>Target Muscles</h3>
+      <p class="targets-text">{{ exercise.muscles_targeted }}</p>
+    </div>
+
+    <div class="detail-section-block">
+      <h3>Description</h3>
+      <p>{{ exercise.description }}</p>
+    </div>
+
+    <div class="detail-section-block">
+      <h3>How to Perform</h3>
+      <div class="instructions-box">
+        {{ exercise.instructions|linebreaksbr }}
+      </div>
+    </div>
+
+    {% if exercise.beginner_tips %}
+    <div class="tip-card">
+      <div class="tip-icon">💡</div>
+      <div class="tip-content">
+        <strong>Beginner Tip</strong>
+        <p>{{ exercise.beginner_tips }}</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="detail-actions">
+      <a class="button wide" href="{% url 'workout:start_workout' %}?recommendation={{ exercise.id }}">Start with this exercise</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

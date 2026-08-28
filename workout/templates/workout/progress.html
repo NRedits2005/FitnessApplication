@@ -1,0 +1,53 @@
+{% extends 'workout/base.html' %}
+{% load static %}
+
+{% block title %}Progress & Analytics · FITNESS+{% endblock %}
+
+{% block content %}
+<section class="page-intro progress-intro">
+  <p class="eyebrow">PROGRESS &amp; ANALYTICS</p>
+  <h1>Your training, clearly tracked</h1>
+  <p class="subtitle">A simple view of your completed workouts, consistency, and training volume.</p>
+</section>
+
+<form class="range-filter" method="get" aria-label="Analytics time range">
+  {% for key, details in ranges.items %}
+  <button class="range-option{% if selected_range == key %} active{% endif %}" type="submit" name="range" value="{{ key }}">{{ details.0 }}</button>
+  {% endfor %}
+</form>
+
+{% if summary.workouts %}
+<section class="analytics-summary-grid" aria-label="{{ range_label }} summary">
+  <article class="analytics-stat card"><span>Total Workouts</span><strong>{{ summary.workouts }}</strong><small>{{ range_label }}</small></article>
+  <article class="analytics-stat card"><span>Current Streak</span><strong>{{ profile.current_streak }}<small> days</small></strong><small>Best: {{ profile.longest_streak }} days</small></article>
+  <article class="analytics-stat card"><span>Workout Time</span><strong>{{ summary.duration }}</strong><small>Completed sessions</small></article>
+  <article class="analytics-stat card"><span>Total Sets</span><strong>{{ summary.sets }}</strong><small>{{ summary.reps }} reps completed</small></article>
+  <article class="analytics-stat card"><span>Total Reps</span><strong>{{ summary.reps }}</strong><small>Across completed sets</small></article>
+  <article class="analytics-stat card"><span>Total Volume</span><strong>{{ summary.volume }}<small> kg</small></strong><small>External weight only</small></article>
+</section>
+
+<section class="analytics-panel card heatmap-panel">
+  <div class="analytics-panel-heading"><div><p class="eyebrow">YOUR ACTIVITY</p><h2>12-month workout activity</h2></div><p>Hover or tap a day to see its workout count.</p></div>
+  <div id="activity-heatmap" class="activity-heatmap" aria-label="Workout activity heatmap"></div>
+  <div class="heatmap-legend"><span>Less</span><i class="level-0"></i><i class="level-1"></i><i class="level-2"></i><i class="level-3"></i><span>More</span></div>
+</section>
+
+<section class="analytics-charts-grid">
+  <article class="analytics-panel card"><div class="analytics-panel-heading"><div><p class="eyebrow">CONSISTENCY</p><h2>Workout Frequency</h2></div><p>Completed workouts by day</p></div><div id="frequency-chart" class="chart-area"></div></article>
+  <article class="analytics-panel card"><div class="analytics-panel-heading"><div><p class="eyebrow">STRENGTH</p><h2>Training Volume</h2></div><p>External weight lifted (kg)</p></div><div id="volume-chart" class="chart-area"></div></article>
+</section>
+
+{% if insights %}
+<section class="analytics-panel card insights-panel"><p class="eyebrow">PROGRESS INSIGHTS</p><h2>What your activity shows</h2><ul class="insights-list">{% for insight in insights %}<li>{{ insight }}</li>{% endfor %}</ul></section>
+{% endif %}
+
+<section class="analytics-panel card milestones-panel"><p class="eyebrow">MILESTONES</p><h2>Achievements</h2><div class="milestones-grid">{% for target, label in milestones %}<div class="milestone{% if all_time_workouts >= target %} earned{% endif %}"><span>{% if all_time_workouts >= target %}✓{% else %}○{% endif %}</span><div><strong>{{ label }}</strong><small>{% if all_time_workouts >= target %}Achieved{% else %}Keep going{% endif %}</small></div></div>{% endfor %}{% for target, label in streak_milestones %}<div class="milestone{% if profile.longest_streak >= target %} earned{% endif %}"><span>{% if profile.longest_streak >= target %}✓{% else %}○{% endif %}</span><div><strong>{{ label }}</strong><small>{% if profile.longest_streak >= target %}Achieved{% else %}Keep building your streak{% endif %}</small></div></div>{% endfor %}</div></section>
+
+<section class="analytics-panel card progress-history"><div class="analytics-panel-heading"><div><p class="eyebrow">WORKOUT HISTORY</p><h2>Completed workouts</h2></div><p>{{ history|length }} in {{ range_label|lower }}</p></div><div class="history-table-wrap"><table><thead><tr><th>Date</th><th>Workout</th><th>Exercises</th><th>Sets</th><th>Reps</th><th>Volume</th><th>Duration</th><th></th></tr></thead><tbody>{% for item in history %}<tr><td>{{ item.workout.date|date:'M j, Y' }}</td><td>Workout <span class="badge badge-success">Completed</span></td><td>{{ item.exercise_count }}</td><td>{{ item.sets }}</td><td>{{ item.reps }}</td><td>{{ item.volume }} kg</td><td>{{ item.duration }}</td><td><a href="{% url 'workout:workout_history_detail' item.workout.id %}">Details</a></td></tr>{% endfor %}</tbody></table></div></section>
+{% else %}
+<section class="empty-state card analytics-empty"><div class="empty-icon">📈</div><h2>{% if all_time_workouts %}No workouts in this time range{% else %}Your progress will appear here{% endif %}</h2><p>{% if all_time_workouts %}Try a wider time range to review earlier completed workouts.{% else %}No workouts yet. Complete your first workout to start tracking your progress.{% endif %}</p><a class="button" href="{% url 'workout:start_workout' %}">Start Workout</a></section>
+{% endif %}
+
+{{ chart_data|json_script:'progress-chart-data' }}
+<script src="{% static 'workout/js/progress.js' %}"></script>
+{% endblock %}

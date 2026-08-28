@@ -1,0 +1,130 @@
+{% extends 'workout/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard · FITNESS+{% endblock %}
+
+{% block content %}
+<!-- Greeting Section -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Good morning, {{ profile.name }} 👋</h1>
+    <p>Ready to continue your fitness journey?</p>
+  </div>
+</section>
+
+<!-- Statistics Row -->
+<section class="stats">
+  <article class="stat-card">
+    <span class="stat-label">STREAK</span>
+    <strong>{{ profile.current_streak }} <em>🔥</em></strong>
+    <span>Days in a row</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">BMI</span>
+    <strong>{{ profile.bmi|default:'—' }}</strong>
+    <span>{{ profile.bmi_category|default:'General guidance' }}</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">WEIGHT</span>
+    <strong>{{ profile.weight_kg|default:'—' }}{% if profile.weight_kg %}<small> kg</small>{% endif %}</strong>
+    <span>Current weight</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">TOTAL WEIGHT LIFTED</span>
+    <strong>{{ total_weight_lifted|default:profile.total_weight_lifted_display }}<small> kg</small></strong>
+    <span>Total weight lifted</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">TOTAL DAYS</span>
+    <strong>{{ profile.longest_streak }}</strong>
+    <span>Best streak</span>
+  </article>
+</section>
+
+<!-- Personalized Featured Workout -->
+<section class="featured-workout">
+  <div class="featured-image">
+    <img src="{% static 'workout/images/fitness-plus/hero_workout.jpg' %}" alt="Athlete training with dumbbells">
+  </div>
+  <div class="featured-copy">
+    <p class="eyebrow">TODAY'S WORKOUT</p>
+    <h2>{{ plan.title }}</h2>
+    <p class="featured-desc">{{ plan.reason }}</p>
+    <div class="feature-meta">
+      <span class="meta-item">{{ plan.exercises|length }} exercises</span>
+      <span class="meta-item">Personalized plan</span>
+      <span class="meta-item">{{ profile.get_experience_level_display }} level</span>
+    </div>
+    <a class="button wide primary-cta" href="{% url 'workout:start_workout' %}">Start workout</a>
+  </div>
+</section>
+
+{% if is_female %}
+<!-- ═══════════════════════════════════════════════════════════════════════
+     WOMEN'S FITNESS — 5 Recommended Exercises
+     for users with profile.gender == 'female'
+     ═══════════════════════════════════════════════════════════════════════ -->
+<section class="womens-fitness-section">
+  <div class="wf-header">
+    <div class="wf-title-group">
+      <span class="wf-label">PERSONALIZED FOR YOU</span>
+      <h2>Women's Fitness</h2>
+      <p class="wf-subtitle">Top 5 recommended exercises curated for your goals and experience level.</p>
+    </div>
+    <a class="button wf-browse-btn" href="{% url 'workout:exercise_library' %}">Browse All Exercises</a>
+  </div>
+
+  <div class="exercise-grid">
+    {% for exercise in plan.exercises %}
+    <article class="exercise-card wf-card" data-name="{{ exercise.name|lower }}" data-bodypart="{{ exercise.body_part_tag }}">
+      <div class="exercise-card-media">
+        <img src="{{ exercise.image }}" alt="Exercise image for {{ exercise.name }}" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' exercise.id %}';">
+        <span class="exercise-badge wf-badge-bodypart">{{ exercise.body_part_tag }}</span>
+      </div>
+      <div class="exercise-card-body">
+        <h3>{{ exercise.name }}</h3>
+        <p class="exercise-meta">{{ exercise.muscles_targeted }} · {{ exercise.get_equipment_type_display }}</p>
+        <p class="exercise-desc">{{ exercise.description|truncatechars:80 }}</p>
+        {% if exercise.is_beginner_friendly %}<span class="wf-beginner-tag">✓ Beginner-friendly</span>{% endif %}
+        <a class="button exercise-cta" href="{% url 'workout:exercise_detail' exercise.id %}">View Details</a>
+      </div>
+    </article>
+    {% empty %}
+    <div class="empty-state">
+      <p>No Women's Fitness exercises are available yet. Update your <a href="{% url 'workout:profile_edit' %}">profile equipment</a> to see compatible exercises.</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXISTING GENERAL EXERCISES — For male / default users
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!-- Recommended Exercises (Final Dashboard Section) -->
+<section class="recommendations">
+  <div class="section-title">
+    <h2>Recommended exercises</h2>
+  </div>
+  <div class="exercise-grid">
+    {% for exercise in plan.exercises %}
+    <article class="exercise-card">
+      <div class="exercise-card-media">
+        <img src="{{ exercise.image }}" alt="Exercise image for {{ exercise.name }}" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' exercise.id %}';">
+        <span class="exercise-badge">{{ exercise.category }}</span>
+      </div>
+      <div class="exercise-card-body">
+        <h3>{{ exercise.name }}</h3>
+        <p class="exercise-meta">{{ exercise.body_part }} · {{ exercise.get_equipment_type_display }}</p>
+        <p class="exercise-desc">{{ exercise.description|truncatechars:75 }}</p>
+        <a class="button exercise-cta" href="{% url 'workout:exercise_detail' exercise.id %}">View exercise</a>
+      </div>
+    </article>
+    {% empty %}
+    <div class="empty-state">
+      <p>Update your available equipment in <a href="{% url 'workout:profile_edit' %}">Profile</a> to see suitable exercises.</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

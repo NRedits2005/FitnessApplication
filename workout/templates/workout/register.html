@@ -1,0 +1,43 @@
+{% extends 'workout/base.html' %}
+
+{% block title %}Create Account · FITNESS+{% endblock %}
+
+{% block content %}
+<section class="auth-page-container">
+  <div class="card">
+    <div class="auth-header">
+      <div class="brand auth-brand">FITNESS<span>+</span></div>
+      <h1>Create your account</h1>
+      <p class="auth-subtitle">Join FITNESS+ to get personalized training plans and track your performance.</p>
+    </div>
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-row">
+        <label for="{{ field.id_for_label }}">
+          {{ field.label }}
+          {{ field }}
+          {% if field.help_text %}
+            <small class="field-help">{{ field.help_text }}</small>
+          {% endif %}
+          {% if field.errors %}
+            <span class="field-error">{{ field.errors.0 }}</span>
+          {% endif %}
+        </label>
+      </div>
+      {% endfor %}
+
+      {% for error in form.non_field_errors %}
+        <p class="error-banner">{{ error }}</p>
+      {% endfor %}
+
+      <button class="btn btn-primary" type="submit">Create Account</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a href="{% url 'workout:login' %}" class="auth-link">Sign in</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

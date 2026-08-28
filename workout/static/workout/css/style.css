@@ -1,0 +1,2667 @@
+/* ==========================================================================
+   FITNESS+ DESIGN SYSTEM & MASTER STYLESHEET
+   Professional, athletic, modern, cohesive fitness application stylesheet.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. DESIGN TOKENS & VARIABLES
+   -------------------------------------------------------------------------- */
+:root {
+  /* Brand Green Identity */
+  --primary: #006948;
+  --primary-hover: #005238;
+  --primary-active: #00402b;
+  --primary-light: #e6f4ee;
+  --primary-subtle: #f2f9f5;
+  --primary-border: #b8dfce;
+  --primary-glow: rgba(0, 105, 72, 0.16);
+
+  /* Neutrals & Dark Text */
+  --ink: #111827;
+  --ink-secondary: #374151;
+  --muted: #6b7280;
+  --muted-light: #9ca3af;
+  --line: #e5eae7;
+  --line-strong: #d1d5db;
+  --bg: #f8faf9;
+  --card-bg: #ffffff;
+  --card-hover-bg: #fcfdfc;
+
+  /* State Accents */
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+
+  /* Elevation Shadows */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 10px -2px rgba(16, 24, 40, 0.06), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 24px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.04);
+  --shadow-hover: 0 10px 25px -3px rgba(0, 105, 72, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+
+  /* Border Radii */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. GLOBAL RESETS & BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ink);
+  background-color: var(--bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  background-color: var(--bg);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+.container {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 24px 80px;
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   3. TYPOGRAPHY HIERARCHY
+   -------------------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 12px;
+}
+
+h1 {
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: clamp(20px, 3vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h4 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 12px;
+  color: var(--ink-secondary);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+/* --------------------------------------------------------------------------
+   4. NAVIGATION BAR & HEADER
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
+}
+
+.header-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.brand span {
+  color: var(--primary);
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktop-nav a {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.desktop-nav a:hover {
+  color: var(--primary);
+  background-color: var(--primary-subtle);
+}
+
+.desktop-nav a.active {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+.logout-form {
+  margin: 0 4px 0 8px;
+}
+
+.nav-button {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.nav-button:hover {
+  color: var(--danger);
+  background-color: var(--danger-bg);
+}
+
+.avatar-link {
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+.header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-border);
+  transition: transform var(--transition-fast);
+}
+
+.header-avatar:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+}
+
+/* Mobile Nav Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  cursor: pointer;
+}
+
+.mobile-menu-toggle .bar {
+  width: 100%;
+  height: 2px;
+  background-color: var(--ink);
+  border-radius: 2px;
+  transition: all var(--transition-fast);
+}
+
+.mobile-nav {
+  display: none;
+  flex-direction: column;
+  padding: 12px 24px 20px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--line);
+  gap: 6px;
+}
+
+.mobile-nav a {
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.mobile-nav a.active {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.mobile-logout-form {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.mobile-logout-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+}
+
+/* --------------------------------------------------------------------------
+   5. BUTTON SYSTEM
+   -------------------------------------------------------------------------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--primary);
+  color: #ffffff !important;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-fast);
+}
+
+.button:hover {
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.button:active {
+  background-color: var(--primary-active);
+  transform: translateY(0);
+}
+
+.button.secondary-button,
+.secondary {
+  background-color: var(--card-bg);
+  color: var(--ink) !important;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
+}
+
+.button.secondary-button:hover,
+.secondary:hover {
+  background-color: var(--bg);
+  border-color: var(--line-strong);
+  color: var(--primary) !important;
+}
+
+.button.compact-button {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.button.wide {
+  width: 100%;
+}
+
+.button.primary-cta {
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.button.danger-link {
+  background: none;
+  border: none;
+  color: var(--danger) !important;
+  font-size: 13px;
+  padding: 6px 10px;
+  box-shadow: none;
+}
+
+.button.danger-link:hover {
+  background-color: var(--danger-bg);
+  transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   6. CARDS & BADGES SYSTEM
+   -------------------------------------------------------------------------- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  line-height: 1;
+}
+
+.badge-primary {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.badge-secondary {
+  background-color: #f3f4f6;
+  color: var(--ink-secondary);
+}
+
+.badge-subtle {
+  background-color: #f9fafb;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.badge-success {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+/* --------------------------------------------------------------------------
+   7. FORM INPUT SYSTEM
+   -------------------------------------------------------------------------- */
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background-color: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.field-error {
+  display: block;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.field-help {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.error-banner {
+  background-color: var(--danger-bg);
+  border: 1px solid #fecaca;
+  color: var(--danger);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin: 10px 0;
+}
+
+/* --------------------------------------------------------------------------
+   8. DASHBOARD - HERO & GREETING
+   -------------------------------------------------------------------------- */
+.hero {
+  margin-bottom: 28px;
+}
+
+.hero-content h1 {
+  margin: 0 0 4px;
+  font-size: clamp(26px, 3.5vw, 34px);
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.hero-content p {
+  font-size: 16px;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------------------------
+   9. DASHBOARD - 5 STATISTICS CARDS
+   -------------------------------------------------------------------------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 20px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 132px;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* 1st card subtle brand highlight */
+.stat-card:first-child {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.stat-card:first-child .stat-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stat-card:first-child .stat-value {
+  color: #ffffff;
+}
+
+.stat-card:first-child .stat-subtext {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.stat-value small {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.stat-emoji {
+  font-style: normal;
+  font-size: 22px;
+}
+
+.stat-subtext {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------------------------------
+   10. DASHBOARD - FEATURED WORKOUT
+   -------------------------------------------------------------------------- */
+.featured-workout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 40px;
+}
+
+.featured-image {
+  min-height: 280px;
+  background: #edf2ee;
+}
+
+.featured-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.featured-copy {
+  padding: 36px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.featured-copy h2 {
+  font-size: 26px;
+  margin: 4px 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.featured-desc {
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.feature-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+}
+
+.meta-item::before {
+  content: '•';
+  color: var(--primary);
+  font-size: 16px;
+}
+
+.featured-cta {
+  align-self: flex-start;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   11. EXERCISE GRIDS & CARDS
+   -------------------------------------------------------------------------- */
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.results-count {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.exercise-card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.exercise-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.exercise-card-media {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background: #f1f5f2;
+  overflow: hidden;
+}
+
+.exercise-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-smooth);
+}
+
+.exercise-card:hover .exercise-card-media img {
+  transform: scale(1.03);
+}
+
+.exercise-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.exercise-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.exercise-card-body h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.exercise-meta {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+
+.exercise-desc {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  line-height: 1.4;
+  margin: 0 0 16px;
+  flex: 1;
+}
+
+.exercise-cta {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.empty-state {
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  grid-column: 1 / -1;
+}
+
+.empty-state p {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.empty-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   12. EXERCISE LIBRARY PAGE
+   -------------------------------------------------------------------------- */
+.page-intro {
+  margin-bottom: 28px;
+}
+
+.page-intro h1 {
+  margin: 0 0 6px;
+}
+
+.profile-summary {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.search-form {
+  margin-top: 16px;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 10px;
+  max-width: 540px;
+}
+
+.search-input-group input {
+  flex: 1;
+}
+
+.exercise-dropdown {
+  display: block;
+  isolation: isolate;
+  position: relative;
+  width: 100%;
+}
+.exercise-dropdown-trigger {
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(27, 57, 43, 0.04);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 1rem;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 12px 17px;
+  text-align: left;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  width: 100%;
+}
+.exercise-dropdown-trigger:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--line)); background: var(--surface); }
+.exercise-dropdown-trigger:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-subtle); outline: 0; }
+.exercise-dropdown-trigger[aria-expanded="true"] { border-color: var(--primary); border-bottom-left-radius: 9px; border-bottom-right-radius: 9px; box-shadow: 0 0 0 3px var(--primary-subtle); }
+.exercise-dropdown-arrow { border-bottom: 2px solid currentColor; border-right: 2px solid currentColor; block-size: 8px; color: var(--primary); flex: 0 0 auto; inline-size: 8px; margin-inline-start: 16px; transform: rotate(45deg) translateY(-2px); transition: transform 160ms ease; }
+.exercise-dropdown-trigger[aria-expanded="true"] .exercise-dropdown-arrow { transform: rotate(225deg) translate(-2px, -2px); }
+.exercise-suggestions {
+  background: var(--card-bg);
+  border: 1px solid var(--primary);
+  border-radius: 0 0 12px 12px;
+  box-sizing: border-box;
+  box-shadow: 0 14px 28px rgba(22, 68, 47, 0.15);
+  inline-size: 100%;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  max-height: 352px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 7px;
+  position: absolute;
+  top: calc(100% - 1px);
+  z-index: 10;
+}
+.exercise-suggestion { background: transparent; border: 0; border-radius: 8px; color: var(--ink); cursor: pointer; display: block; font: inherit; line-height: 1.35; min-height: 42px; padding: 11px 13px; text-align: left; transition: background-color 120ms ease, color 120ms ease; width: 100%; }
+.exercise-suggestion:hover, .exercise-suggestion.active { background: var(--primary-subtle); color: var(--primary); }
+.exercise-suggestion[aria-selected="true"] { color: var(--primary); font-weight: 700; }
+.exercise-suggestion:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); outline: 0; }
+.autocomplete-empty { color: var(--muted); margin: 10px; padding: 8px; }
+
+@media (max-width: 560px) {
+  .exercise-dropdown-trigger { min-height: 54px; padding-inline: 14px; }
+  .exercise-suggestions { max-height: min(352px, 50vh); }
+}
+
+.filter-header {
+  margin-bottom: 10px;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.filter {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter:hover {
+  border-color: var(--primary-border);
+  color: var(--primary);
+  background-color: var(--primary-subtle);
+}
+
+.filter.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.query-feedback {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   13. EXERCISE DETAIL PAGE
+   -------------------------------------------------------------------------- */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.back-link:hover {
+  color: var(--primary);
+}
+
+.exercise-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.exercise-detail-media {
+  padding: 16px;
+}
+
+.detail-photo {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: #edf2ee;
+}
+
+.media-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.exercise-detail-info {
+  padding: 32px;
+}
+
+.detail-header {
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+}
+
+.detail-header h1 {
+  margin: 4px 0 0;
+}
+
+.detail-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.meta-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.meta-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.meta-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.detail-section-block {
+  margin-bottom: 20px;
+}
+
+.detail-section-block h3 {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.instructions-box {
+  background: var(--bg);
+  border-left: 3px solid var(--primary);
+  padding: 14px 16px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.tip-card {
+  display: flex;
+  gap: 12px;
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+
+.tip-icon {
+  font-size: 20px;
+}
+
+.tip-content strong {
+  display: block;
+  font-size: 13px;
+  color: #854d0e;
+  margin-bottom: 2px;
+}
+
+.tip-content p {
+  font-size: 13px;
+  color: #713f12;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   14. START WORKOUT & ACTIVE SESSION
+   -------------------------------------------------------------------------- */
+.start-workout-container,
+.complete-page-container,
+.auth-page-container {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.start-card {
+  padding: 32px;
+}
+
+.card-header {
+  margin-bottom: 24px;
+}
+
+.recommendation-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--primary-subtle);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+
+.rec-icon {
+  font-size: 24px;
+}
+
+.rec-info {
+  flex: 1;
+}
+
+.rec-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--primary);
+}
+
+.rec-info h3 {
+  margin: 2px 0 0;
+  font-size: 15px;
+}
+
+.rec-info p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.form-section {
+  margin-bottom: 16px;
+}
+
+.form-section-divider {
+  margin: 24px 0 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+
+.form-section-divider h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.selection-details-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.preview-flex {
+  display: flex;
+  gap: 16px;
+}
+
+.preview-thumb {
+  width: 120px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: #edf2ee;
+}
+
+.preview-info {
+  flex: 1;
+}
+
+.preview-info h3 {
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+
+.preview-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.preview-desc,
+.preview-target,
+.preview-tip {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  margin-bottom: 4px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.form-field-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.input-unit-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-unit-wrapper input {
+  padding-right: 48px;
+}
+
+.input-unit {
+  position: absolute;
+  right: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.time-field-group {
+  margin: 0;
+}
+
+.time-field {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin: 0;
+  background: #ffffff;
+}
+
+.time-field legend {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 4px;
+  color: var(--ink);
+}
+
+.time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-part {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.time-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.time-part input {
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.time-colon {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   15. ACTIVE WORKOUT SESSION SCREEN
+   -------------------------------------------------------------------------- */
+.session-card {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 32px;
+  padding: 32px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.session-media-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.session-photo-wrapper {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #edf2ee;
+}
+
+.session-photo-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.state-badge-overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+.state-badge {
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.session-instructions-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.session-instructions-card h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.session-instructions-card p {
+  font-size: 13px;
+  margin: 0;
+}
+
+.session-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.session-header h1 {
+  font-size: 28px;
+  margin: 4px 0 16px;
+}
+
+.session-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.metric-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.metric-value.big-number {
+  font-size: 20px;
+}
+
+.metric-value.big-number span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.progress {
+  display: flex;
+  gap: 8px;
+}
+
+.progress i {
+  flex: 1;
+  height: 8px;
+  background: #e2e8e4;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-normal);
+}
+
+.progress i.done {
+  background: #74bc98;
+}
+
+.progress i.current {
+  background: var(--primary);
+  transform: scaleY(1.3);
+}
+
+.timer-panel {
+  background: #f4f8f5;
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+}
+
+.timer-digits {
+  display: block;
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.timer-message {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.timer-btn {
+  padding: 10px 18px;
+}
+
+/* --------------------------------------------------------------------------
+   16. WORKOUT COMPLETE & SUMMARY
+   -------------------------------------------------------------------------- */
+.complete-card {
+  padding: 36px;
+  text-align: center;
+}
+
+.completion-badge-wrap {
+  margin-bottom: 12px;
+}
+
+.completion-mark {
+  width: 64px;
+  height: 64px;
+  background: var(--primary-light);
+  border: 2px solid var(--primary-border);
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  color: var(--primary);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.completion-title {
+  margin: 4px 0 6px;
+}
+
+.completion-subtitle {
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.complete-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.summary-stat-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px 10px;
+}
+
+.stat-box-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat-box-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.volume-achievement-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
+  text-align: left;
+  margin-bottom: 28px;
+}
+
+.volume-icon {
+  font-size: 34px;
+}
+
+.volume-text {
+  flex: 1;
+}
+
+.volume-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--primary);
+}
+
+.volume-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1.1;
+  margin: 2px 0;
+}
+
+.volume-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.complete-exercises-list {
+  text-align: left;
+  margin-bottom: 28px;
+}
+
+.complete-exercises-list h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.complete-exercise-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.item-main h4 {
+  margin: 0 0 2px;
+  font-size: 14px;
+}
+
+.item-main p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   17. PROGRESS & HISTORY PAGE
+   -------------------------------------------------------------------------- */
+.progress-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.history-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workout-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+}
+
+.workout-card-left {
+  flex: 1;
+}
+
+.workout-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.workout-card-header h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.workout-date-link {
+  color: var(--ink);
+}
+
+.workout-date-link:hover {
+  color: var(--primary);
+}
+
+.workout-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entry-row {
+  font-size: 13px;
+  color: var(--ink-secondary);
+}
+
+.entry-row strong {
+  color: var(--ink);
+}
+
+.entry-meta {
+  color: var(--muted);
+}
+
+.volume-tag {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.workout-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   18. DIET PAGE
+   -------------------------------------------------------------------------- */
+.diet-day-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.diet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.meal-card {
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  overflow: hidden;
+  min-height: 160px;
+}
+
+.meal-image-wrap {
+  position: relative;
+  width: 40%;
+  min-width: 140px;
+  background: #edf2ee;
+}
+
+.meal-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.meal-type-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.meal-copy {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.meal-copy h2 {
+  font-size: 17px;
+  margin: 0 0 6px;
+}
+
+.meal-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.diet-note-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f9fbf9;
+}
+
+.diet-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   19. PROFILE PAGE
+   -------------------------------------------------------------------------- */
+.profile-layout-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.profile-sidebar-card {
+  text-align: center;
+  padding: 28px 24px;
+}
+
+.profile-avatar-wrap {
+  margin-bottom: 14px;
+}
+
+.profile-main-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto;
+  border: 3px solid var(--primary-border);
+}
+
+/* Per-set values are saved with the completed set, so each set may use a
+   different load or number of repetitions. */
+.session-set-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.session-set-inputs label {
+  color: var(--text);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 7px;
+}
+
+.session-set-inputs input {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.profile-sidebar-card h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.profile-username {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.profile-quick-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+  margin-bottom: 20px;
+}
+
+.quick-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.quick-stat .stat-label {
+  margin: 0;
+}
+
+.detail-section-card {
+  margin-bottom: 16px;
+  padding: 24px;
+}
+
+.section-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+
+.section-card-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.metrics-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.info-item {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+
+.info-item.full-span {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.info-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.equipment-pill-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.equipment-tag {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.section-hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   20. PROFILE EDIT & SETUP FORM
+   -------------------------------------------------------------------------- */
+.profile-edit-card {
+  max-width: 640px;
+}
+
+.form-section-title {
+  margin: 20px 0 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.form-section-title:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.form-section-title h3 {
+  font-size: 15px;
+  color: var(--primary);
+  margin: 0 0 2px;
+}
+
+.section-subtext {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.form-row {
+  margin-bottom: 14px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.bmi-live-banner {
+  display: none;
+  background: var(--primary-subtle);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.equipment-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.equipment-checkbox-grid label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin: 0;
+  transition: all var(--transition-fast);
+}
+
+.equipment-checkbox-grid label:hover {
+  background: var(--primary-subtle);
+  border-color: var(--primary-border);
+}
+
+.equipment-checkbox-grid input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  margin: 0;
+}
+
+.form-actions-bar {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* --------------------------------------------------------------------------
+   21. AUTH (LOGIN & REGISTER)
+   -------------------------------------------------------------------------- */
+.auth-page-container {
+  max-width: 440px;
+  margin: 40px auto;
+}
+
+.auth-card {
+  padding: 36px 32px;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-brand {
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+
+.auth-header h1 {
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+
+.auth-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.auth-form .form-row {
+  margin-bottom: 16px;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.auth-footer p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.auth-link {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   22. RESPONSIVE BREAKPOINTS
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .progress-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .featured-workout {
+    grid-template-columns: 1fr;
+  }
+  .featured-image {
+    min-height: 200px;
+    height: 220px;
+  }
+  .featured-copy {
+    padding: 28px;
+  }
+  .exercise-detail-layout {
+    grid-template-columns: 1fr;
+  }
+  .profile-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .session-card {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+  .session-photo-wrapper {
+    height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  .mobile-nav:not([hidden]) {
+    display: flex;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .diet-grid {
+    grid-template-columns: 1fr;
+  }
+  .meal-card {
+    flex-direction: column;
+  }
+  .meal-image-wrap {
+    width: 100%;
+    height: 160px;
+  }
+  .workout-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .workout-card-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 540px) {
+  .container {
+    padding: 24px 16px 60px;
+  }
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .progress-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-grid,
+  .form-grid-2,
+  .metrics-two-col {
+    grid-template-columns: 1fr;
+  }
+  .session-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .timer-digits {
+    font-size: 42px;
+  }
+  .start-card,
+  .complete-card,
+  .auth-card {
+    padding: 20px;
+  }
+  .search-input-group {
+    flex-direction: column;
+  }
+  .search-input-group .button {
+    width: 100%;
+  }
+}
+
+/* Progress & Analytics ---------------------------------------------------- */
+.progress-intro { margin-bottom: 18px; }
+.range-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+.range-option { border: 1px solid var(--line-strong); background: var(--card-bg); color: var(--ink-secondary); padding: 8px 12px; border-radius: var(--radius-full); cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; transition: var(--transition-fast); }
+.range-option:hover, .range-option.active { background: var(--primary); border-color: var(--primary); color: white; }
+.analytics-summary-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
+.analytics-stat { padding: 18px; display: flex; flex-direction: column; min-width: 0; }
+.analytics-stat > span, .analytics-stat > small { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.analytics-stat > strong { color: var(--ink); font-size: clamp(22px, 2.4vw, 30px); line-height: 1.15; margin: 10px 0 8px; white-space: nowrap; }
+.analytics-stat > strong small { color: var(--muted); font-size: 13px; font-weight: 600; }
+.analytics-panel { padding: 24px; margin: 0 0 24px; }
+.analytics-panel-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 18px; }
+.analytics-panel-heading h2, .analytics-panel h2 { margin-bottom: 0; }
+.analytics-panel-heading > p { color: var(--muted); font-size: 13px; max-width: 260px; text-align: right; }
+.activity-heatmap { display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; grid-auto-columns: minmax(9px, 1fr); gap: 3px; min-width: 650px; }
+.heatmap-panel { overflow-x: auto; }
+.heatmap-cell, .heatmap-legend i { border-radius: 3px; background: #e8eeea; display: block; }
+.heatmap-cell { cursor: default; outline-offset: 2px; }
+.heatmap-cell:focus { outline: 2px solid var(--primary); }
+.level-1 { background: #b8dfce; }.level-2 { background: #56af85; }.level-3 { background: var(--primary); }
+.heatmap-legend { display: flex; justify-content: flex-end; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; margin-top: 12px; min-width: 650px; }
+.heatmap-legend i { width: 12px; height: 12px; }
+.analytics-charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.chart-area { min-height: 230px; }
+.chart-area svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart-grid { stroke: var(--line); stroke-width: 1; }.chart-axis { fill: var(--muted); font-size: 11px; }.chart-bar { fill: var(--primary); opacity: .88; }.chart-bar:hover { opacity: 1; }.chart-line { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }.chart-points circle { fill: var(--card-bg); stroke: var(--primary); stroke-width: 3; }
+.insights-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }.insights-list li { color: var(--ink-secondary); padding: 11px 12px 11px 38px; background: var(--primary-subtle); border-radius: var(--radius-sm); position: relative; }.insights-list li::before { content: '↗'; position: absolute; left: 14px; color: var(--primary); font-weight: 800; }
+.milestones-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }.milestone { display: flex; gap: 9px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--muted); }.milestone > span { font-weight: 800; font-size: 18px; }.milestone strong, .milestone small { display: block; }.milestone strong { font-size: 13px; color: inherit; }.milestone small { font-size: 11px; }.milestone.earned { color: var(--primary); background: var(--primary-subtle); border-color: var(--primary-border); }
+.history-table-wrap { overflow-x: auto; }.progress-history table { width: 100%; border-collapse: collapse; min-width: 750px; font-size: 13px; }.progress-history th { color: var(--muted); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; text-align: left; }.progress-history td, .progress-history th { padding: 13px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }.progress-history td:first-child, .progress-history th:first-child { padding-left: 0; }.progress-history .badge { margin-left: 5px; }.analytics-empty { text-align: center; padding: 48px 24px; }.analytics-empty .empty-icon { font-size: 38px; margin-bottom: 12px; }
+
+@media (max-width: 1100px) { .analytics-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }.milestones-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .analytics-summary-grid, .analytics-charts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.analytics-panel { padding: 18px; }.analytics-panel-heading { display: block; }.analytics-panel-heading > p { text-align: left; margin-top: 6px; }.activity-heatmap, .heatmap-legend { min-width: 560px; }.activity-heatmap { grid-auto-rows: 10px; } }
+@media (max-width: 420px) { .analytics-summary-grid, .milestones-grid { grid-template-columns: 1fr; }.range-option { padding: 7px 10px; font-size: 12px; } }
+
+/* --------------------------------------------------------------------------
+   WOMEN'S FITNESS SECTION
+   Gender-based exercise UI for female users.
+   Uses existing FITNESS+ design tokens for full consistency.
+   -------------------------------------------------------------------------- */
+
+/* ── Dashboard: Women's Fitness Section ────────────────────────────────── */
+.womens-fitness-section {
+  margin-top: 40px;
+}
+
+.wf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.wf-title-group h2 {
+  font-size: clamp(24px, 3.5vw, 32px);
+  font-weight: 800;
+  margin: 0 0 6px;
+  background: linear-gradient(135deg, #7c3aed, #c026d3, #e11d48);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.wf-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a855f7;
+  margin-bottom: 4px;
+}
+
+.wf-subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.wf-browse-btn {
+  white-space: nowrap;
+  margin-top: 8px;
+}
+
+/* ── Category Tabs ──────────────────────────────────────────────────────── */
+.wf-category-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.wf-tab {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.wf-tab:hover {
+  border-color: #c084fc;
+  color: #7c3aed;
+  background-color: #f5f3ff;
+}
+
+.wf-tab.active {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #ffffff;
+  border-color: #7c3aed;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+/* ── Category Headings ──────────────────────────────────────────────────── */
+.wf-category-group {
+  margin-bottom: 32px;
+}
+
+.wf-category-heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ede9fe;
+}
+
+/* ── Exercise Card — Women's variant ────────────────────────────────────── */
+.wf-card .exercise-card-body {
+  position: relative;
+}
+
+/* Difficulty badges */
+.wf-badge-beginner,
+.exercise-badge.wf-badge-beginner {
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
+}
+
+.wf-badge-intermediate,
+.exercise-badge.wf-badge-intermediate {
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+}
+
+.wf-badge-advanced,
+.exercise-badge.wf-badge-advanced {
+  background: rgba(225, 29, 72, 0.12);
+  color: #be123c;
+}
+
+/* Detail page difficulty badges */
+.wf-detail-badge-beginner {
+  background: #dcfce7 !important;
+  color: #16a34a !important;
+}
+.wf-detail-badge-intermediate {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+}
+.wf-detail-badge-advanced {
+  background: #ffe4e6 !important;
+  color: #be123c !important;
+}
+
+/* Beginner-friendly tag */
+.wf-beginner-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  margin-bottom: 10px;
+}
+
+/* ── Women's Library — Advanced Filters ─────────────────────────────────── */
+.wf-advanced-filters {
+  margin-bottom: 24px;
+}
+
+.wf-filter-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wf-filter-group {
+  flex: 1;
+  min-width: 160px;
+}
+
+.wf-filter-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+
+.wf-filter-group select {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  appearance: auto;
+}
+
+.wf-filter-group select:focus {
+  outline: none;
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* ── Library category filter links (women's version uses <a> instead of buttons) ── */
+.filters a.filter {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* ── Exercise Detail: Recommended Workout Parameters ───────────────────── */
+.wf-recommended-params {
+  margin: 24px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+  border-radius: var(--radius-md);
+  border: 1px solid #ede9fe;
+}
+
+.wf-recommended-params h3 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #7c3aed;
+}
+
+.wf-params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.wf-param-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 10px;
+  background: var(--card-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+}
+
+.wf-param-icon {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.wf-param-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.wf-param-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ── Responsive: Women's Fitness ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .wf-header {
+    flex-direction: column;
+  }
+  .wf-filter-row {
+    flex-direction: column;
+  }
+  .wf-filter-group {
+    min-width: 100%;
+  }
+  .wf-category-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .wf-category-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .wf-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .wf-params-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .wf-params-grid {
+    grid-template-columns: 1fr;
+  }
+  .wf-title-group h2 {
+    font-size: 22px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   PROFILE IMAGE UPLOAD
+   -------------------------------------------------------------------------- */
+.profile-image-upload-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--primary-subtle);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.profile-image-preview-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-img-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--primary-border);
+  background: var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-normal);
+}
+
+.profile-img-circle:hover {
+  border-color: var(--primary);
+}
+
+.profile-img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-img-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-img-controls {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-img-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.profile-img-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.profile-img-choose-btn {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-img-remove-btn {
+  font-size: 13px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-img-status {
+  font-size: 12px;
+  min-height: 16px;
+  margin: 4px 0 0;
+}
+
+.photo-error-banner {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 8px;
+}
+
+/* Danger outline button for Remove Photo */
+.danger-button-outline {
+  background: transparent;
+  border: 1.5px solid var(--danger);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.danger-button-outline:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* Profile page: main avatar sizing — circular, object-fit cover */
+.profile-main-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 540px) {
+  .profile-image-upload-section {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .profile-img-buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .session-set-inputs {
+    grid-template-columns: 1fr;
+  }
+}

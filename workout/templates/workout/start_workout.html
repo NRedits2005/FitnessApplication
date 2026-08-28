@@ -1,0 +1,300 @@
+{% extends 'workout/base.html' %}
+{% load static %}
+
+{% block title %}Start Workout · FITNESS+{% endblock %}
+
+{% block content %}
+<section class="start-workout-container">
+  <div class="card start-card">
+    <div class="card-header">
+      <p class="eyebrow">CUSTOM WORKOUT SETUP</p>
+      <h1>Configure your exercise</h1>
+      <p class="subtitle">Set your planned repetitions, sets, weights, and pacing intervals.</p>
+    </div>
+
+    {% if recommendation %}
+    <div class="recommendation-banner" id="rec-banner">
+      <div class="rec-icon">⚡</div>
+      <div class="rec-info">
+        <span class="rec-tag">TODAY'S TOP RECOMMENDATION</span>
+        <h3>{{ recommendation.name }}</h3>
+        <p>{{ recommendation.body_part }} · {{ recommendation.get_equipment_type_display }} · {{ recommendation.category }}</p>
+      </div>
+      <button type="button" class="button secondary-button compact-button" id="use-recommendation" data-exercise-id="{{ recommendation.id }}">
+        Use recommendation
+      </button>
+    </div>
+    {% endif %}
+
+    <form method="post" id="workout-form" class="workout-setup-form">
+      {% csrf_token %}
+
+      <div class="form-section">
+        <label for="exercise-dropdown" class="field-label">Choose Exercise</label>
+        <div class="exercise-dropdown" id="exercise-dropdown-wrap">
+          <button id="exercise-dropdown" class="exercise-dropdown-trigger" type="button" role="combobox" aria-autocomplete="list" aria-controls="exercise-suggestions" aria-expanded="false" aria-haspopup="listbox">
+            <span id="exercise-dropdown-label">Select an exercise</span><span class="exercise-dropdown-arrow" aria-hidden="true"></span>
+          </button>
+          <div class="exercise-suggestions" id="exercise-suggestions" role="listbox" hidden></div>
+        </div>
+        <div class="select-wrapper" id="exercise-native-select">
+          {{ form.exercise }}
+        </div>
+      </div>
+
+      <!-- Live Exercise Preview Box -->
+      <div id="selection-details" class="selection-details-card">
+        <p class="text-muted">Select an exercise above to preview movements and equipment guidance.</p>
+      </div>
+
+      <div class="form-section-divider">
+        <h2>Workout Parameters</h2>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field-group">
+          <label for="id_sets" class="field-label">Sets</label>
+          <div class="input-unit-wrapper">
+            {{ form.sets }}
+            <span class="input-unit">sets</span>
+          </div>
+          <small class="field-help">Total workout sets</small>
+        </div>
+
+        <div class="form-field-group">
+          <label for="id_repetitions" class="field-label">Repetitions per Set</label>
+          <div class="input-unit-wrapper">
+            {{ form.repetitions }}
+            <span class="input-unit">reps</span>
+          </div>
+          <small class="field-help">Target reps per set</small>
+        </div>
+
+        <div class="form-field-group time-field-group">
+          <fieldset class="time-field">
+            <legend class="field-label">Exercise Duration (per set)</legend>
+            <div class="time-inputs">
+              <div class="time-part">
+                <span class="time-label">MIN</span>
+                {{ form.exercise_minutes }}
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-part">
+                <span class="time-label">SEC</span>
+                {{ form.exercise_seconds }}
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="form-field-group time-field-group">
+          <fieldset class="time-field">
+            <legend class="field-label">Rest Duration (between sets)</legend>
+            <div class="time-inputs">
+              <div class="time-part">
+                <span class="time-label">MIN</span>
+                {{ form.rest_minutes }}
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-part">
+                <span class="time-label">SEC</span>
+                {{ form.rest_seconds }}
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="form-field-group full-width" id="weight-field">
+          <label for="id_weight" class="field-label" id="weight-label">Equipment / Weight (kg)</label>
+          <div class="input-unit-wrapper">
+            {{ form.weight }}
+            <span class="input-unit">kg</span>
+          </div>
+          <small class="field-help">External load per repetition (use 0 for bodyweight)</small>
+        </div>
+      </div>
+
+      {% for field in form %}
+        {% for error in field.errors %}
+          <p class="error-banner">{{ field.label }}: {{ error }}</p>
+        {% endfor %}
+      {% endfor %}
+      {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+          <p class="error-banner">{{ error }}</p>
+        {% endfor %}
+      {% endif %}
+
+      <div class="form-actions">
+        <button class="button wide primary-cta" type="submit">Start Workout Session</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<select id="exercise-data" hidden>
+  {% for exercise in exercises %}
+  <option value="{{ exercise.id }}"
+    data-image="{{ exercise.image }}"
+    data-part="{{ exercise.body_part }}"
+    data-description="{{ exercise.description }}"
+    data-instructions="{{ exercise.instructions }}"
+    data-muscles="{{ exercise.muscles_targeted }}"
+    data-tips="{{ exercise.beginner_tips }}"
+    data-bodyweight="{{ exercise.is_bodyweight|yesno:'true,false' }}"
+    data-equipment="{{ exercise.get_equipment_type_display }}"
+    data-difficulty="{{ exercise.category }}"></option>
+  {% endfor %}
+</select>
+
+<script>
+const select = document.querySelector('#id_exercise');
+const details = document.querySelector('#selection-details');
+const weight = document.querySelector('#weight-field');
+const weightLabel = document.querySelector('#weight-label');
+const weightInput = document.querySelector('#id_weight');
+const exerciseData = Object.fromEntries([...document.querySelectorAll('#exercise-data option')].map(option => [option.value, option.dataset]));
+const dropdown = document.querySelector('#exercise-dropdown');
+const dropdownLabel = document.querySelector('#exercise-dropdown-label');
+const suggestions = document.querySelector('#exercise-suggestions');
+const nativeSelectWrap = document.querySelector('#exercise-native-select');
+const choices = [...select.options].filter(option => option.value).map(option => ({
+  id: option.value,
+  name: option.text,
+  search: `${option.text} ${exerciseData[option.value].part} ${exerciseData[option.value].muscles} ${exerciseData[option.value].equipment} ${exerciseData[option.value].difficulty}`.toLowerCase(),
+}));
+let activeSuggestion = -1;
+let filterText = '';
+let clearFilterTimer;
+
+function show() {
+  const o = select.options[select.selectedIndex];
+  const data = exerciseData[o.value];
+  if (!o.value || !data) {
+    details.innerHTML = '<p class="text-muted">Select an exercise above to preview movements and equipment guidance.</p>';
+    weight.hidden = true;
+    weightInput.value = '';
+    weightInput.disabled = true;
+    return;
+  }
+  const isBody = data.bodyweight === 'true' || data.equipment === 'Bodyweight';
+  weight.hidden = isBody;
+  weightInput.disabled = isBody;
+  if (isBody) {
+    weightInput.value = '';
+  }
+  weightLabel.textContent = `${data.equipment} Weight (kg)`;
+  details.innerHTML = `
+    <div class="preview-flex">
+      <img class="preview-thumb" src="${data.image}" alt="${o.text}" onerror="this.onerror=null;this.src='/exercise/${o.value}/visual.svg';">
+      <div class="preview-info">
+        <h3>${o.text}</h3>
+        <div class="preview-tags">
+          <span class="badge badge-primary">${data.part}</span>
+          <span class="badge badge-secondary">${data.equipment}</span>
+          <span class="badge badge-subtle">${data.difficulty}</span>
+        </div>
+        <p class="preview-desc">${data.description}</p>
+        <p class="preview-target"><strong>Targets:</strong> ${data.muscles}</p>
+        ${data.tips ? `<p class="preview-tip"><strong>Tip:</strong> ${data.tips}</p>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+select.onchange = show;
+function selectExercise(id) {
+  select.value = id;
+  dropdownLabel.textContent = select.options[select.selectedIndex].text;
+  suggestions.hidden = true;
+  dropdown.setAttribute('aria-expanded', 'false');
+  dropdown.removeAttribute('aria-activedescendant');
+  activeSuggestion = -1;
+  filterText = '';
+  show();
+}
+
+function renderSuggestions() {
+  const term = filterText.toLowerCase();
+  const matches = choices.filter(choice => !term || choice.search.includes(term));
+  suggestions.replaceChildren();
+  activeSuggestion = -1;
+  if (!matches.length) {
+    const noResults = document.createElement('p');
+    noResults.className = 'autocomplete-empty';
+    noResults.textContent = 'No exercises found';
+    suggestions.append(noResults);
+  } else {
+    matches.forEach((choice, index) => {
+      const option = document.createElement('button');
+      option.type = 'button'; option.className = 'exercise-suggestion';
+      option.id = `exercise-suggestion-${choice.id}`;
+      option.setAttribute('role', 'option'); option.setAttribute('aria-selected', choice.id === select.value ? 'true' : 'false'); option.dataset.id = choice.id; option.dataset.index = index;
+      option.textContent = choice.name;
+      option.addEventListener('mousedown', event => { event.preventDefault(); selectExercise(choice.id); });
+      suggestions.append(option);
+    });
+  }
+  suggestions.hidden = false;
+  dropdown.setAttribute('aria-expanded', 'true');
+}
+
+function openDropdown() {
+  filterText = '';
+  renderSuggestions();
+}
+
+function closeDropdown() {
+  suggestions.hidden = true;
+  dropdown.setAttribute('aria-expanded', 'false');
+  dropdown.removeAttribute('aria-activedescendant');
+  activeSuggestion = -1;
+}
+
+dropdown.addEventListener('click', () => {
+  if (suggestions.hidden) openDropdown();
+  else closeDropdown();
+});
+dropdown.addEventListener('keydown', event => {
+  const options = [...suggestions.querySelectorAll('.exercise-suggestion')];
+  if (event.key === 'Escape') { closeDropdown(); filterText = ''; return; }
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    if (suggestions.hidden) openDropdown();
+  } else if (event.key === 'Enter' && suggestions.hidden) {
+    event.preventDefault(); openDropdown(); return;
+  } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    event.preventDefault();
+    filterText += event.key;
+    clearTimeout(clearFilterTimer);
+    clearFilterTimer = window.setTimeout(() => { filterText = ''; }, 900);
+    renderSuggestions();
+    return;
+  } else if (event.key === 'Backspace' && filterText) {
+    filterText = filterText.slice(0, -1); renderSuggestions(); return;
+  }
+  const visibleOptions = [...suggestions.querySelectorAll('.exercise-suggestion')];
+  if (!visibleOptions.length) return;
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    activeSuggestion = (activeSuggestion + (event.key === 'ArrowDown' ? 1 : -1) + visibleOptions.length) % visibleOptions.length;
+    visibleOptions.forEach((option, index) => {
+      const isActive = index === activeSuggestion;
+      option.classList.toggle('active', isActive);
+      if (isActive) {
+        dropdown.setAttribute('aria-activedescendant', option.id);
+        option.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  } else if (event.key === 'Enter') {
+    event.preventDefault(); selectExercise(visibleOptions[Math.max(0, activeSuggestion)].dataset.id);
+  }
+});
+document.addEventListener('click', event => { if (!document.querySelector('#exercise-dropdown-wrap').contains(event.target)) closeDropdown(); });
+nativeSelectWrap.hidden = true;
+document.querySelector('#use-recommendation')?.addEventListener('click', event => {
+  selectExercise(event.currentTarget.dataset.exerciseId);
+  dropdown.focus();
+});
+show();
+</script>
+{% endblock %}

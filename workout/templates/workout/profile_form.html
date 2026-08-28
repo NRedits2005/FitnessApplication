@@ -1,0 +1,264 @@
+{% extends 'workout/base.html' %}
+{% load static %}
+
+{% block title %}{% if setup %}Set Up Your Profile · FITNESS+{% else %}Edit Profile · FITNESS+{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-intro text-center-wrap">
+  <p class="eyebrow">{% if setup %}WELCOME TO FITNESS+{% else %}PROFILE SETTINGS{% endif %}</p>
+  <h1>{% if setup %}Personalize your fitness profile{% else %}Edit your profile{% endif %}</h1>
+  <p class="subtitle">{% if setup %}We use your information to calibrate personalized workouts, volume calculations, and nutritional recommendations.{% else %}Update your biometric measurements, fitness goals, home equipment, and profile photo.{% endif %}</p>
+</div>
+
+<section class="form-page-container">
+  <div class="card auth-card profile-edit-card">
+    <form method="post" enctype="multipart/form-data" class="standard-form">
+      {% csrf_token %}
+      {{ form.remove_photo }}
+
+      <!-- ── Profile Image Section (Edit mode only) ── -->
+      {% if not setup %}
+      <div class="form-section-title">
+        <h3>0. Profile Image</h3>
+      </div>
+      <div class="profile-image-upload-section">
+        <div class="profile-image-preview-wrap">
+          <div class="profile-img-circle" id="profile-img-circle">
+            {% if profile.profile_image %}
+              <img src="{{ profile.profile_image.url }}" alt="Current profile photo" id="profile-img-preview" class="profile-img-preview">
+            {% else %}
+              <img src="{% static 'workout/images/fitness-plus/profile_user.jpg' %}" alt="Default avatar" id="profile-img-preview" class="profile-img-preview">
+            {% endif %}
+          </div>
+          <div class="profile-img-badge" id="profile-img-badge" aria-label="Upload photo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+        </div>
+        <div class="profile-img-controls">
+          <p class="profile-img-hint">Upload a JPG, PNG, or WEBP photo (max 5 MB). Your photo appears on your profile and in the navigation bar.</p>
+          <div class="profile-img-buttons">
+            <label for="id_profile_image" class="button secondary-button profile-img-choose-btn" id="choose-photo-label">
+              📷 Change Photo
+            </label>
+            {{ form.profile_image }}
+            {% if profile.profile_image %}
+            <button type="button" class="button danger-button-outline profile-img-remove-btn" id="remove-photo-btn">
+              🗑 Remove Photo
+            </button>
+            {% else %}
+            <button type="button" class="button danger-button-outline profile-img-remove-btn" id="remove-photo-btn" style="display:none;">
+              🗑 Remove Photo
+            </button>
+            {% endif %}
+          </div>
+          {% if form.profile_image.errors %}
+            <div class="photo-error-banner">
+              ⚠️ {{ form.profile_image.errors.0 }}
+            </div>
+          {% endif %}
+          <p class="profile-img-status" id="profile-img-status"></p>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="form-section-title">
+        <h3>1. Personal Details</h3>
+      </div>
+      <div class="form-row">
+        <label for="id_name">
+          Full Name
+          {{ form.name }}
+          {% if form.name.errors %}<span class="field-error">{{ form.name.errors.0 }}</span>{% endif %}
+        </label>
+      </div>
+
+      <div class="form-grid-2">
+        <label for="id_age">
+          Age (years)
+          {{ form.age }}
+          {% if form.age.errors %}<span class="field-error">{{ form.age.errors.0 }}</span>{% endif %}
+        </label>
+        <label for="id_gender">
+          Gender
+          {{ form.gender }}
+          {% if form.gender.errors %}<span class="field-error">{{ form.gender.errors.0 }}</span>{% endif %}
+        </label>
+      </div>
+
+      <div class="form-section-title">
+        <h3>2. Biometrics &amp; Physical Stats</h3>
+      </div>
+      <div class="form-grid-2">
+        <label for="id_height_cm">
+          Height (cm)
+          {{ form.height_cm }}
+          {% if form.height_cm.errors %}<span class="field-error">{{ form.height_cm.errors.0 }}</span>{% endif %}
+        </label>
+        <label for="id_weight_kg">
+          Weight (kg)
+          {{ form.weight_kg }}
+          {% if form.weight_kg.errors %}<span class="field-error">{{ form.weight_kg.errors.0 }}</span>{% endif %}
+        </label>
+      </div>
+
+      <!-- Live BMI Feedback Banner -->
+      <div id="bmi-live" class="bmi-live-banner"></div>
+
+      <div class="form-section-title">
+        <h3>3. Training Goals &amp; Preferences</h3>
+      </div>
+      <div class="form-grid-2">
+        <label for="id_goal">
+          Primary Goal
+          {{ form.goal }}
+          {% if form.goal.errors %}<span class="field-error">{{ form.goal.errors.0 }}</span>{% endif %}
+        </label>
+        <label for="id_experience_level">
+          Experience Level
+          {{ form.experience_level }}
+          {% if form.experience_level.errors %}<span class="field-error">{{ form.experience_level.errors.0 }}</span>{% endif %}
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label for="id_workout_location">
+          Preferred Workout Location
+          {{ form.workout_location }}
+          {% if form.workout_location.errors %}<span class="field-error">{{ form.workout_location.errors.0 }}</span>{% endif %}
+        </label>
+      </div>
+
+      <div id="home-equipment-section">
+        <div class="form-section-title">
+          <h3>4. Available Home Equipment</h3>
+          <p class="section-subtext">Select all equipment you have access to. The Exercise Library will automatically filter by this setup.</p>
+        </div>
+
+        <div class="equipment-checkbox-grid">
+          {{ form.home_equipment }}
+        </div>
+        {% if form.home_equipment.errors %}
+          <span class="field-error">{{ form.home_equipment.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      {% for error in form.non_field_errors %}
+        <p class="error-banner">{{ error }}</p>
+      {% endfor %}
+
+      <div class="form-actions-bar">
+        <button class="button wide primary-cta" type="submit">Save Profile Settings</button>
+        {% if not setup %}
+          <a href="{% url 'workout:profile' %}" class="button secondary-button wide">Cancel</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+const heightInput = document.querySelector('#id_height_cm');
+const weightInput = document.querySelector('#id_weight_kg');
+const bmiBanner = document.querySelector('#bmi-live');
+
+function updateBmi() {
+  const h = +heightInput.value;
+  const w = +weightInput.value;
+  if (h && w && h > 50 && w > 10) {
+    const score = (w / ((h / 100) ** 2)).toFixed(1);
+    let category = 'Healthy range';
+    if (score < 18.5) category = 'Underweight';
+    else if (score >= 25 && score < 30) category = 'Overweight';
+    else if (score >= 30) category = 'Obesity';
+
+    bmiBanner.style.display = 'block';
+    bmiBanner.innerHTML = `<strong>Calculated BMI: ${score}</strong> · <span class="badge badge-primary">${category}</span> <small class="text-muted">(General metric)</small>`;
+  } else {
+    bmiBanner.style.display = 'none';
+  }
+}
+
+if (heightInput && weightInput && bmiBanner) {
+  heightInput.addEventListener('input', updateBmi);
+  weightInput.addEventListener('input', updateBmi);
+  updateBmi();
+}
+
+const workoutLocation = document.querySelector('#id_workout_location');
+const homeEquipmentSection = document.querySelector('#home-equipment-section');
+
+function syncHomeEquipmentVisibility() {
+  if (!workoutLocation || !homeEquipmentSection) return;
+  homeEquipmentSection.hidden = workoutLocation.value.toLowerCase() !== 'home';
+}
+
+if (workoutLocation && homeEquipmentSection) {
+  workoutLocation.addEventListener('change', syncHomeEquipmentVisibility);
+  syncHomeEquipmentVisibility();
+}
+
+// ── Profile Image Upload JS ──────────────────────────────────────────────────
+const fileInput = document.getElementById('id_profile_image');
+const imgPreview = document.getElementById('profile-img-preview');
+const removeBtn = document.getElementById('remove-photo-btn');
+const removePhotoFlag = document.getElementById('id_remove_photo');
+const imgStatus = document.getElementById('profile-img-status');
+
+if (fileInput) {
+  // Hide the default file input – the label acts as the button
+  fileInput.style.display = 'none';
+
+  fileInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxBytes = 5 * 1024 * 1024;
+
+    if (!allowed.includes(file.type)) {
+      if (imgStatus) {
+        imgStatus.textContent = '⚠️ Only JPG, PNG, and WEBP images are supported.';
+        imgStatus.style.color = 'var(--danger)';
+      }
+      this.value = '';
+      return;
+    }
+    if (file.size > maxBytes) {
+      if (imgStatus) {
+        imgStatus.textContent = `⚠️ Image is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Max is 5 MB.`;
+        imgStatus.style.color = 'var(--danger)';
+      }
+      this.value = '';
+      return;
+    }
+
+    // Show live preview
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      if (imgPreview) imgPreview.src = e.target.result;
+      if (imgStatus) {
+        imgStatus.textContent = `✓ "${file.name}" selected — save your profile to apply.`;
+        imgStatus.style.color = 'var(--success)';
+      }
+      if (removeBtn) removeBtn.style.display = 'inline-flex';
+      if (removePhotoFlag) removePhotoFlag.value = '';
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+if (removeBtn) {
+  removeBtn.addEventListener('click', function () {
+    const defaultSrc = "{% static 'workout/images/fitness-plus/profile_user.jpg' %}";
+    if (imgPreview) imgPreview.src = defaultSrc;
+    if (fileInput) fileInput.value = '';
+    if (removePhotoFlag) removePhotoFlag.value = 'true';
+    if (imgStatus) {
+      imgStatus.textContent = 'Photo will be removed when you save your profile.';
+      imgStatus.style.color = 'var(--muted)';
+    }
+    removeBtn.style.display = 'none';
+  });
+}
+</script>
+{% endblock %}

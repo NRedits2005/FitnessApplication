@@ -1,0 +1,12 @@
+<article class="exercise-card" data-name="{{ exercise.name|lower }}" data-part="{{ exercise.body_part }}">
+  <div class="exercise-card-media">
+    <img src="{{ exercise.image }}" alt="Exercise image for {{ exercise.name }}" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' exercise.id %}';">
+    <span class="exercise-badge">{{ exercise.category }}</span>
+  </div>
+  <div class="exercise-card-body">
+    <h3>{{ exercise.name }}</h3>
+    <p class="exercise-meta">{{ exercise.body_part }} · {{ exercise.get_equipment_type_display }}</p>
+    <p class="exercise-desc">{{ exercise.description|truncatechars:80 }}</p>
+    <a class="button exercise-cta" href="{% url 'workout:exercise_detail' exercise.id %}">View exercise</a>
+  </div>
+</article>

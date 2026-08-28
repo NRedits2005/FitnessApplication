@@ -1,0 +1,133 @@
+{% extends 'workout/base.html' %}
+{% load static %}
+
+{% block title %}Exercise Library · FITNESS+{% endblock %}
+
+{% block content %}
+{% if is_female %}
+{# ═══════════════════════ WOMEN'S FITNESS LIBRARY ═══════════════════════ #}
+<section class="page-intro">
+  <span class="wf-label">WOMEN'S FITNESS</span>
+  <h1>Exercise Library</h1>
+  <p class="profile-summary">Exercises curated for your goals and equipment setup.</p>
+
+  <form method="get" class="search-form" id="wf-search-form">
+    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+    <div class="search-input-group">
+      <input id="exercise-search" name="q" value="{{ query }}" placeholder="Search exercises by name..." aria-label="Search exercises">
+      <button class="button" type="submit">Search</button>
+    </div>
+  </form>
+</section>
+
+
+<section class="library-section">
+  {# Category filter pills #}
+  <div class="filter-header">
+    <p class="eyebrow">BROWSE BY CATEGORY</p>
+  </div>
+  <div class="filters" id="wf-lib-filters">
+    <a class="filter{% if not selected_category %} active{% endif %}" href="?{% if query %}q={{ query|urlencode }}{% endif %}">All</a>
+    {% for cat in womens_categories %}
+    <a class="filter{% if selected_category == cat %} active{% endif %}" href="?category={{ cat|urlencode }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}">{{ cat }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="section-title">
+    <h2>{% if selected_category %}{{ selected_category }}{% else %}All Women's Fitness Exercises{% endif %}</h2>
+    <span class="results-count" id="exercise-results-count">{{ exercises|length }} exercise{{ exercises|length|pluralize }}</span>
+  </div>
+
+  {% if query %}
+  <p class="query-feedback">Showing results for <strong>"{{ query }}"</strong> {% if selected_category %}in <strong>{{ selected_category }}</strong>{% endif %} · <a href="?{% if selected_category %}category={{ selected_category|urlencode }}{% endif %}">Clear search</a></p>
+  {% endif %}
+
+  <div class="exercise-grid" id="exercise-grid">
+    {% for exercise in exercises %}
+    <article class="exercise-card wf-card" data-search="{{ exercise.name }} {{ exercise.category }} {{ exercise.body_part }} {{ exercise.muscles_targeted }} {{ exercise.equipment_type }} {{ exercise.description|striptags|lower }}">
+      <div class="exercise-card-media">
+        <img src="{{ exercise.image }}" alt="Exercise image for {{ exercise.name }}" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' exercise.id %}';">
+        <span class="exercise-badge wf-badge-bodypart">{{ exercise.body_part_tag }}</span>
+      </div>
+      <div class="exercise-card-body">
+        <h3>{{ exercise.name }}</h3>
+        <p class="exercise-meta">{{ exercise.muscles_targeted }} · {{ exercise.get_equipment_type_display }}</p>
+        <p class="exercise-desc">{{ exercise.description|truncatechars:80 }}</p>
+        {% if exercise.is_beginner_friendly %}<span class="wf-beginner-tag">✓ Beginner-friendly</span>{% endif %}
+        <a class="button exercise-cta" href="{% url 'workout:exercise_detail' exercise.id %}">View Details</a>
+      </div>
+    </article>
+    {% empty %}
+      <div class="empty-state">
+        <p>No exercises found{% if selected_category %} for {{ selected_category }}{% endif %}{% if query %} matching your search{% endif %}. Try a different exercise, muscle group, or category.</p>
+        {% if is_home_workout %}
+        <a class="button secondary-button" href="{% url 'workout:profile_edit' %}">Update your equipment</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="empty-state" id="live-search-empty" hidden><p>No exercises found. Try a different exercise, muscle group, or category.</p></div>
+</section>
+
+{% else %}
+{# ═══════════════════════ EXISTING GENERAL LIBRARY ═══════════════════════ #}
+<section class="page-intro">
+  <p class="eyebrow">EXERCISE LIBRARY</p>
+  <h1>{% if is_home_workout %}Exercises that fit your setup{% else %}All exercises{% endif %}</h1>
+  {% if is_home_workout %}
+  <p class="profile-summary">Based on your equipment: <strong>{{ profile_equipment|join:', ' }}</strong></p>
+  {% else %}
+  <p class="profile-summary">Your Gym preference gives you access to the complete exercise library.</p>
+  {% endif %}
+  
+  <form method="get" class="search-form">
+    <input type="hidden" name="body_part" value="{{ selected_body_part }}">
+    <div class="search-input-group">
+      <input id="exercise-search" name="q" value="{{ query }}" placeholder="Search exercises by name..." aria-label="Search exercises">
+      <button class="button" type="submit">Search</button>
+    </div>
+  </form>
+</section>
+
+<section class="library-section">
+  <div class="filter-header">
+    <p class="eyebrow">BROWSE BY BODY PART</p>
+  </div>
+  
+  <form method="get" class="filters" id="filters">
+    <input type="hidden" name="q" value="{{ query }}">
+    <button class="filter{% if not selected_body_part %} active{% endif %}" type="submit" name="body_part" value="">All</button>
+    {% for part in body_parts %}
+    <button class="filter{% if selected_body_part == part %} active{% endif %}" type="submit" name="body_part" value="{{ part }}">{{ part }}</button>
+    {% endfor %}
+  </form>
+
+  <div class="section-title">
+    <h2>{% if selected_body_part %}{{ selected_body_part }} exercises{% elif is_home_workout %}Exercises available to you{% else %}All exercises{% endif %}</h2>
+    <span class="results-count" id="exercise-results-count">{{ exercises|length }} exercise{{ exercises|length|pluralize }}</span>
+  </div>
+
+  {% if query %}
+  <p class="query-feedback">Showing results for <strong>"{{ query }}"</strong> {% if selected_body_part %}in <strong>{{ selected_body_part }}</strong>{% endif %} · <a href="?{% if selected_body_part %}body_part={{ selected_body_part }}{% endif %}">Clear search</a></p>
+  {% endif %}
+
+  <div class="exercise-grid" id="exercise-grid">
+    {% for exercise in exercises %}
+      {% include 'workout/_exercise_card.html' with exercise=exercise %}
+    {% empty %}
+      <div class="empty-state">
+        <p>{% if is_home_workout %}{% if selected_body_part %}No exercises found for this category with your current equipment.{% else %}No exercises found with your current equipment{% if query %} and search criteria{% endif %}.{% endif %}{% else %}No exercises found{% if selected_body_part %} for {{ selected_body_part }}{% endif %}{% if query %} matching your search criteria{% endif %}.{% endif %} Try a different exercise, muscle group, or category.</p>
+        {% if is_home_workout %}
+        <a class="button secondary-button" href="{% url 'workout:profile_edit' %}">Update your equipment</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="empty-state" id="live-search-empty" hidden><p>No exercises found. Try a different exercise, muscle group, or category.</p></div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'workout/js/library-search.js' %}"></script>
+{% endblock %}

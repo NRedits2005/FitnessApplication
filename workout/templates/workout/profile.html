@@ -1,0 +1,118 @@
+{% extends 'workout/base.html' %}
+{% load static %}
+
+{% block title %}My Profile · FITNESS+{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <p class="eyebrow">USER PROFILE</p>
+  <h1>{{ profile.name|default:user.username }}'s Fitness Profile</h1>
+  <p class="subtitle">Your customized biometric settings, experience level, and home training equipment.</p>
+</div>
+
+<div class="profile-layout-grid">
+  <!-- Left Column: Key Highlights -->
+  <div class="profile-sidebar-card card">
+    <div class="profile-avatar-wrap">
+      {% if profile.profile_image %}
+        <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }}" class="profile-main-avatar">
+      {% else %}
+        <img src="{% static 'workout/images/fitness-plus/profile_user.jpg' %}" alt="{{ profile.name }}" class="profile-main-avatar">
+      {% endif %}
+    </div>
+    <h2>{{ profile.name|default:user.username }}</h2>
+    <p class="profile-username">@{{ user.username }} · {{ user.email }}</p>
+    
+    <div class="profile-quick-stats">
+      <div class="quick-stat">
+        <span class="stat-label">Current Streak</span>
+        <strong class="stat-value">{{ profile.current_streak }} 🔥</strong>
+      </div>
+      <div class="quick-stat">
+        <span class="stat-label">Best Streak</span>
+        <strong class="stat-value">{{ profile.longest_streak }} days</strong>
+      </div>
+      <div class="quick-stat">
+        <span class="stat-label">Total Lifted</span>
+        <strong class="stat-value">{{ profile.total_weight_lifted_display }} kg</strong>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <a class="button wide primary-cta" href="{% url 'workout:profile_edit' %}">Edit Profile Settings</a>
+    </div>
+  </div>
+
+  <!-- Right Column: Structured Information Cards -->
+  <div class="profile-details-column">
+    <!-- Card 1: Personal & Physical Metrics -->
+    <div class="card detail-section-card">
+      <div class="section-card-header">
+        <span class="section-icon">👤</span>
+        <h3>Personal & Body Metrics</h3>
+      </div>
+      <div class="metrics-two-col">
+        <div class="info-item">
+          <span class="info-label">Age</span>
+          <strong class="info-val">{{ profile.age|default:'Not set' }}{% if profile.age %} years{% endif %}</strong>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Gender</span>
+          <strong class="info-val">{{ profile.get_gender_display }}</strong>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Height</span>
+          <strong class="info-val">{{ profile.height_cm|default:'Not set' }}{% if profile.height_cm %} cm{% endif %}</strong>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Weight</span>
+          <strong class="info-val">{{ profile.weight_kg|default:'Not set' }}{% if profile.weight_kg %} kg{% endif %}</strong>
+        </div>
+        <div class="info-item full-span">
+          <span class="info-label">BMI Score</span>
+          <strong class="info-val">
+            {{ profile.bmi|default:'—' }}
+            {% if profile.bmi_category %}
+              <span class="badge badge-primary">{{ profile.bmi_category }}</span>
+            {% endif %}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Training & Fitness Goals -->
+    <div class="card detail-section-card">
+      <div class="section-card-header">
+        <span class="section-icon">🎯</span>
+        <h3>Goals & Experience</h3>
+      </div>
+      <div class="metrics-two-col">
+        <div class="info-item">
+          <span class="info-label">Fitness Goal</span>
+          <strong class="info-val">{{ profile.get_goal_display }}</strong>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Experience Level</span>
+          <strong class="info-val">{{ profile.get_experience_level_display }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Available Equipment -->
+    <div class="card detail-section-card">
+      <div class="section-card-header">
+        <span class="section-icon">🏋️</span>
+        <h3>Available Equipment</h3>
+      </div>
+      <p class="section-hint">The Exercise Library and customized workouts will automatically adapt to these items.</p>
+      <div class="equipment-pill-list">
+        {% for item in profile.equipment_display_list %}
+          <span class="equipment-tag">{{ item }}</span>
+        {% empty %}
+          <span class="equipment-tag">Bodyweight Only (No equipment)</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

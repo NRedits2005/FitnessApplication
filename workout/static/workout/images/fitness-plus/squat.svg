@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad_squat" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006948" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#004e61" stop-opacity="0.22" />
+    </linearGradient>
+    <radialGradient id="glow_squat" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#68dba9" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#68dba9" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <!-- Background Card Canvas -->
+  <rect width="480" height="360" rx="20" fill="#f3f4f5" />
+  <rect width="480" height="360" rx="20" fill="url(#grad_squat)" />
+  <circle cx="240" cy="180" r="130" fill="url(#glow_squat)" />
+  
+  <!-- Grid Accent Lines -->
+  <line x1="40" y1="180" x2="440" y2="180" stroke="#bccac0" stroke-width="1" stroke-dasharray="6,6" opacity="0.4" />
+  <line x1="240" y1="40" x2="240" y2="320" stroke="#bccac0" stroke-width="1" stroke-dasharray="6,6" opacity="0.4" />
+
+  <!-- Exercise Artwork -->
+  
+            <!-- Head -->
+            <circle cx="240" cy="115" r="18" fill="#e1e3e4" />
+            <!-- Barbell on shoulders -->
+            <line x1="130" y1="135" x2="350" y2="135" stroke="#68dba9" stroke-width="8" stroke-linecap="round" />
+            <rect x="120" y="110" width="16" height="50" rx="4" fill="#00855d" />
+            <rect x="344" y="110" width="16" height="50" rx="4" fill="#00855d" />
+            <!-- Torso (Squat depth) -->
+            <path d="M 240 133 L 230 200" stroke="#191c1d" stroke-width="26" stroke-linecap="round" />
+            <!-- Thighs & Calves -->
+            <path d="M 230 200 L 180 230 L 195 300" fill="none" stroke="#00855d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 230 200 L 290 230 L 285 300" fill="none" stroke="#00855d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Floor line -->
+            <line x1="130" y1="310" x2="350" y2="310" stroke="#bccac0" stroke-width="4" stroke-linecap="round" />
+        
+
+  <!-- Badge / Tag -->
+  <g transform="translate(24, 24)">
+    <rect width="130" height="32" rx="16" fill="#ffffff" filter="drop-shadow(0px 2px 8px rgba(0,0,0,0.08))" />
+    <text x="65" y="21" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#006948" text-anchor="middle">Quadriceps</text>
+  </g>
+</svg>
