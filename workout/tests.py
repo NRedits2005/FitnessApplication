@@ -30,7 +30,7 @@ class ExerciseLibraryProfileFilteringTests(TestCase):
         return self.client.get(reverse('workout:exercise_library'), params)
 
     def rendered_ids(self, response):
-        return set(response.context['exercises'].values_list('pk', flat=True))
+        return {e.pk for e in response.context['exercises']}
 
     def test_library_uses_only_saved_profile_equipment(self):
         response = self.library()
@@ -125,7 +125,7 @@ class WomensFitnessCategoryFilteringTests(TestCase):
         return self.client.get(reverse('workout:exercise_library'), params)
 
     def returned_names(self, response):
-        return set(response.context['exercises'].values_list('name', flat=True))
+        return {e.name for e in response.context['exercises']}
 
     def test_each_womens_category_uses_its_persisted_category_rule(self):
         expected = {
@@ -167,7 +167,7 @@ class WomensFitnessCategoryFilteringTests(TestCase):
         )
         response = self.library(body_part='Chest')
         self.assertFalse(response.context['is_female'])
-        self.assertEqual(set(response.context['exercises'].values_list('pk', flat=True)), {general.pk})
+        self.assertEqual({e.pk for e in response.context['exercises']}, {general.pk})
 
 
 class ExerciseSearchAndAutocompleteTests(TestCase):
@@ -205,7 +205,7 @@ class ExerciseSearchAndAutocompleteTests(TestCase):
         self.client.login(username=user.username, password='password')
         response = self.client.get(reverse('workout:exercise_library'), params)
         self.assertEqual(response.status_code, 200)
-        return response, set(response.context['exercises'].values_list('name', flat=True))
+        return response, {e.name for e in response.context['exercises']}
 
     def test_female_searches_all_supported_fields_without_leaking_male_library(self):
         _, names = self.library_names(self.female, q='GLUT')
@@ -646,3 +646,37 @@ class CompletedSetPersistenceTests(TestCase):
         )
         response = self.client.get(reverse('workout:progress'), {'range': 'today'})
         self.assertEqual(response.context['summary']['volume'], '296')
+
+
+class DashboardRecommendationsCountTests(TestCase):
+    def setUp(self):
+        for i in range(10):
+            Exercise.objects.create(
+                name=f'Female Exercise {i}', body_part='Legs', equipment_type='bodyweight',
+                category='Lower Body & Glutes', description=f'Female desc {i}', instructions='Instructions',
+                muscles_targeted='Glutes', is_bodyweight=True, gender_category='female',
+            )
+            Exercise.objects.create(
+                name=f'Male Exercise {i}', body_part='Chest', equipment_type='bodyweight',
+                category='Chest', description=f'Male desc {i}', instructions='Instructions',
+                muscles_targeted='Chest', is_bodyweight=True, gender_category='all',
+            )
+
+    def test_female_dashboard_gives_exactly_4_recommended_exercises(self):
+        user = User.objects.create_user('female-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, gender='female', workout_location='gym')
+        self.client.login(username='female-user', password='password')
+        response = self.client.get(reverse('workout:dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['plan']['exercises']), 4)
+        self.assertContains(response, "Top 4 recommended exercises")
+
+    def test_male_dashboard_gives_exactly_4_recommended_exercises(self):
+        user = User.objects.create_user('male-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, gender='male', workout_location='gym')
+        self.client.login(username='male-user', password='password')
+        response = self.client.get(reverse('workout:dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['plan']['exercises']), 4)
+        self.assertContains(response, "Recommended exercises")
+

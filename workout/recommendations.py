@@ -133,7 +133,7 @@ def score_exercise(exercise, profile):
     return score
 
 
-def get_recommended_exercises(profile, limit=6):
+def get_recommended_exercises(profile, limit=4):
     exercises = list(get_available_exercises(profile))
     ranked = ((score_exercise(exercise, profile), exercise.name.lower(), exercise) for exercise in exercises)
     recs = [item[2] for item in sorted(ranked, key=lambda item: (-item[0], item[1]))[:limit]]
@@ -143,7 +143,7 @@ def get_recommended_exercises(profile, limit=6):
 
 
 def daily_workout(profile):
-    recs = get_recommended_exercises(profile, limit=5)
+    recs = get_recommended_exercises(profile, limit=4)
     return {
         'title': 'Home Workout' if profile.workout_location == 'home' else 'Gym Workout',
         'reason': 'Personalized for your goal, age, BMI, location, equipment, gender, and experience.',
