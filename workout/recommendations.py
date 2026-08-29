@@ -21,6 +21,7 @@ WOMENS_CATEGORIES = [
 WOMENS_STANDARD_CATEGORIES = tuple(
     category for category in WOMENS_CATEGORIES if category != 'Beginner-Friendly'
 )
+MALE_LIBRARY_BODY_PARTS = ('Back', 'Biceps', 'Calisthenics', 'Cardio', 'Chest', 'Core', 'Full Body', 'Legs', 'Shoulders')
 
 
 def selected_equipment(profile):
@@ -95,6 +96,13 @@ def get_womens_category_queryset(profile, category=None):
     return womens_qs
 
 
+def get_workout_select_exercises(profile):
+    """Return the exercises a user can choose from when starting a workout."""
+    if profile.gender == 'female':
+        return get_womens_category_queryset(profile)
+    return get_available_exercises(profile).filter(body_part__in=MALE_LIBRARY_BODY_PARTS)
+
+
 def get_womens_exercises(profile):
     """Return Women's Fitness exercises grouped using the same category rules as the library."""
     grouped = {}
@@ -134,7 +142,7 @@ def score_exercise(exercise, profile):
 
 
 def get_recommended_exercises(profile, limit=4):
-    exercises = list(get_available_exercises(profile))
+    exercises = list(get_workout_select_exercises(profile))
     ranked = ((score_exercise(exercise, profile), exercise.name.lower(), exercise) for exercise in exercises)
     recs = [item[2] for item in sorted(ranked, key=lambda item: (-item[0], item[1]))[:limit]]
     gender = profile.gender if profile else 'male'

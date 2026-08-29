@@ -747,15 +747,17 @@ textarea:focus {
 .exercise-card-media {
   position: relative;
   width: 100%;
-  height: 160px;
-  background: #f1f5f2;
+  aspect-ratio: 16 / 9;
+  background: #edf2ee;
   overflow: hidden;
 }
 
 .exercise-card-media img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
+  display: block;
   transition: transform var(--transition-smooth);
 }
 
@@ -775,6 +777,7 @@ textarea:focus {
   font-weight: 700;
   color: var(--primary);
   box-shadow: var(--shadow-xs);
+  z-index: 2;
 }
 
 .exercise-card-body {
@@ -861,15 +864,20 @@ textarea:focus {
   flex: 1;
 }
 
+.form-section {
+  position: relative;
+  z-index: 50;
+}
+
 .exercise-dropdown {
   display: block;
-  isolation: isolate;
   position: relative;
   width: 100%;
+  z-index: 60;
 }
 .exercise-dropdown-trigger {
   align-items: center;
-  background: var(--card-bg);
+  background: var(--card-bg, #ffffff);
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: 0 2px 5px rgba(27, 57, 43, 0.04);
@@ -887,15 +895,16 @@ textarea:focus {
 }
 .exercise-dropdown-trigger:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--line)); background: var(--surface); }
 .exercise-dropdown-trigger:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-subtle); outline: 0; }
-.exercise-dropdown-trigger[aria-expanded="true"] { border-color: var(--primary); border-bottom-left-radius: 9px; border-bottom-right-radius: 9px; box-shadow: 0 0 0 3px var(--primary-subtle); }
+.exercise-dropdown-trigger[aria-expanded="true"] { border-color: var(--primary); border-bottom-left-radius: 0; border-bottom-right-radius: 0; box-shadow: 0 0 0 3px var(--primary-subtle); }
 .exercise-dropdown-arrow { border-bottom: 2px solid currentColor; border-right: 2px solid currentColor; block-size: 8px; color: var(--primary); flex: 0 0 auto; inline-size: 8px; margin-inline-start: 16px; transform: rotate(45deg) translateY(-2px); transition: transform 160ms ease; }
 .exercise-dropdown-trigger[aria-expanded="true"] .exercise-dropdown-arrow { transform: rotate(225deg) translate(-2px, -2px); }
 .exercise-suggestions {
-  background: var(--card-bg);
+  background: var(--card-bg, #ffffff);
   border: 1px solid var(--primary);
+  border-top: none;
   border-radius: 0 0 12px 12px;
   box-sizing: border-box;
-  box-shadow: 0 14px 28px rgba(22, 68, 47, 0.15);
+  box-shadow: 0 14px 28px rgba(22, 68, 47, 0.18), 0 6px 12px rgba(0, 0, 0, 0.08);
   inline-size: 100%;
   inset-inline-start: 0;
   inset-inline-end: auto;
@@ -904,8 +913,8 @@ textarea:focus {
   overscroll-behavior: contain;
   padding: 7px;
   position: absolute;
-  top: calc(100% - 1px);
-  z-index: 10;
+  top: 100%;
+  z-index: 9999;
 }
 .exercise-suggestion { background: transparent; border: 0; border-radius: 8px; color: var(--ink); cursor: pointer; display: block; font: inherit; line-height: 1.35; min-height: 42px; padding: 11px 13px; text-align: left; transition: background-color 120ms ease, color 120ms ease; width: 100%; }
 .exercise-suggestion:hover, .exercise-suggestion.active { background: var(--primary-subtle); color: var(--primary); }
@@ -984,21 +993,27 @@ textarea:focus {
 }
 
 .exercise-detail-media {
-  padding: 16px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
 }
 
 .detail-photo {
   width: 100%;
-  height: 280px;
+  aspect-ratio: 16 / 9;
+  height: auto;
   object-fit: cover;
-  border-radius: var(--radius-md);
+  display: block;
   background: #edf2ee;
 }
 
 .media-badges {
   display: flex;
   gap: 8px;
-  margin-top: 14px;
+  padding: 14px 16px;
+  flex-wrap: wrap;
 }
 
 .exercise-detail-info {
@@ -2605,6 +2620,7 @@ textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: #000 !important;
 }
 
 .profile-img-status {
@@ -2627,7 +2643,7 @@ textarea:focus {
 .danger-button-outline {
   background: transparent;
   border: 1.5px solid var(--danger);
-  color: var(--danger);
+  color: #000;
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
@@ -2638,7 +2654,12 @@ textarea:focus {
 
 .danger-button-outline:hover {
   background: var(--danger-bg);
-  color: var(--danger);
+  color: #000;
+}
+
+.button.danger-button-outline.profile-img-remove-btn,
+.button.danger-button-outline.profile-img-remove-btn:hover {
+  color: #000 !important;
 }
 
 /* Profile page: main avatar sizing — circular, object-fit cover */

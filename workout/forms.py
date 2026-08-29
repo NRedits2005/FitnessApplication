@@ -26,8 +26,8 @@ class StartWorkoutForm(forms.Form):
         if profile is None:
             self.fields['exercise'].queryset = Exercise.objects.order_by(Lower('name'), 'name', 'pk')
         else:
-            from .recommendations import get_available_exercises
-            self.fields['exercise'].queryset = get_available_exercises(profile).order_by(Lower('name'), 'name', 'pk')
+            from .recommendations import get_workout_select_exercises
+            self.fields['exercise'].queryset = get_workout_select_exercises(profile).order_by(Lower('name'), 'name', 'pk')
 
     def clean(self):
         cleaned = super().clean()

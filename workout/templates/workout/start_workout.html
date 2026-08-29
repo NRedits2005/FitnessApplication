@@ -4,6 +4,69 @@
 {% block title %}Start Workout · FITNESS+{% endblock %}
 
 {% block content %}
+<style>
+  /* Ensure exercise dropdown container and options float above all subsequent form controls */
+
+  /* The workout form must never clip the dropdown */
+  .workout-setup-form {
+    overflow: visible !important;
+  }
+
+  /* Give the exercise section a high z-index so it layers above all siblings */
+  .exercise-selection-section {
+    position: relative !important;
+    z-index: 100 !important;
+  }
+
+  /* The custom dropdown widget itself */
+  .exercise-dropdown {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    z-index: 101 !important;
+  }
+
+  /* The floating suggestion list — must be above everything on the page */
+  .exercise-suggestions {
+    background: var(--card-bg, #ffffff) !important;
+    border: 1px solid var(--primary, #006948) !important;
+    border-top: none !important;
+    border-radius: 0 0 12px 12px !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.10) !important;
+    inline-size: 100% !important;
+    inset-inline-start: 0 !important;
+    inset-inline-end: auto !important;
+    max-height: 352px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    padding: 7px !important;
+    position: absolute !important;
+    top: 100% !important;
+    z-index: 9999 !important;
+  }
+
+  .exercise-dropdown-trigger[aria-expanded="true"] {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-color: var(--primary, #006948) !important;
+  }
+
+  /* All form elements BELOW the dropdown get z-index: 0 so they never
+     create a stacking context that overlaps the suggestion list */
+  #selection-details,
+  .form-section-divider,
+  .form-grid,
+  .form-field-group,
+  .input-unit-wrapper,
+  .time-field-group,
+  .time-field,
+  .form-actions {
+    position: relative !important;
+    z-index: 0 !important;
+  }
+</style>
+
 <section class="start-workout-container">
   <div class="card start-card">
     <div class="card-header">
@@ -29,7 +92,7 @@
     <form method="post" id="workout-form" class="workout-setup-form">
       {% csrf_token %}
 
-      <div class="form-section">
+      <div class="form-section exercise-selection-section">
         <label for="exercise-dropdown" class="field-label">Choose Exercise</label>
         <div class="exercise-dropdown" id="exercise-dropdown-wrap">
           <button id="exercise-dropdown" class="exercise-dropdown-trigger" type="button" role="combobox" aria-autocomplete="list" aria-controls="exercise-suggestions" aria-expanded="false" aria-haspopup="listbox">

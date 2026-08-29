@@ -152,6 +152,25 @@ class WomensFitnessCategoryFilteringTests(TestCase):
             'Jumping Jacks', 'Cat-Cow Stretch',
         })
 
+    def test_female_start_workout_dropdown_matches_library_exercise_names(self):
+        Exercise.objects.create(
+            name='Female Strength Press', category='Strength', body_part='Chest',
+            equipment_type='bodyweight', description='Description',
+            instructions='Instructions', muscles_targeted='Chest',
+            is_bodyweight=True, gender_category='female',
+        )
+
+        library_response = self.library()
+        start_response = self.client.get(reverse('workout:start_workout'))
+
+        library_names = self.returned_names(library_response)
+        dropdown_names = set(
+            start_response.context['form'].fields['exercise'].queryset.values_list('name', flat=True)
+        )
+
+        self.assertEqual(dropdown_names, library_names)
+        self.assertNotIn('Female Strength Press', dropdown_names)
+
     def test_category_links_encode_ampersands_and_preserve_active_state(self):
         response = self.library(category='Cardio & Fat Burning')
         self.assertContains(response, 'category=Lower%20Body%20%26%20Glutes')
@@ -679,4 +698,3 @@ class DashboardRecommendationsCountTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['plan']['exercises']), 4)
         self.assertContains(response, "Recommended exercises")
-

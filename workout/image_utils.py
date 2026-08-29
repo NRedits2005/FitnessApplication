@@ -125,7 +125,13 @@ def get_exercise_image_path(exercise_name, category='Full Body', gender='male'):
     matched = find_existing_image(exercise_name, gender)
     if not matched:
         matched = create_exercise_png(exercise_name, category, gender)
-    return f'/static/workout/images/{gender}/{matched}'
+    
+    filepath = os.path.join(STATIC_IMAGES_DIR, gender, matched)
+    try:
+        v = int(os.path.getmtime(filepath))
+        return f'/static/workout/images/{gender}/{matched}?v={v}'
+    except OSError:
+        return f'/static/workout/images/{gender}/{matched}'
 
 
 def attach_exercise_images(exercises, gender='male'):

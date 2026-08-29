@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from django.utils.html import escape
 from .forms import ProfileForm, RegisterForm, StartWorkoutForm
 from .models import DietMeal, Exercise, UserProfile, Workout, WorkoutExercise, WorkoutSet
-from .recommendations import daily_workout, diet_for, diet_meals, get_available_exercises, get_recommended_exercises, get_womens_category_queryset, get_womens_exercises, search_exercises, WOMENS_CATEGORIES
+from .recommendations import daily_workout, diet_for, diet_meals, get_available_exercises, get_recommended_exercises, get_womens_category_queryset, get_womens_exercises, get_workout_select_exercises, search_exercises, MALE_LIBRARY_BODY_PARTS, WOMENS_CATEGORIES
 from .analytics import RANGES, build_progress_data, get_range, progress_insights
 from .image_utils import attach_exercise_images, get_exercise_image_path
 
@@ -152,7 +152,7 @@ def start_workout(request):
             recommendation_id = int(request.GET.get('recommendation', ''))
         except (TypeError, ValueError):
             recommendation_id = None
-        if recommendation_id and get_available_exercises(profile).filter(pk=recommendation_id).exists():
+        if recommendation_id and get_workout_select_exercises(profile).filter(pk=recommendation_id).exists():
             initial['exercise'] = recommendation_id
         form = StartWorkoutForm(profile=profile, initial=initial)
     return render(request, 'workout/start_workout.html', {
@@ -331,8 +331,7 @@ def exercise_library(request):
         exercises = get_womens_category_queryset(profile, selected_category or None)
         if query:
             exercises = search_exercises(exercises, query)
-        else:
-            exercises = exercises.order_by('category', Lower('name'), 'name', 'pk')
+        exercises = exercises.order_by(Lower('name'), 'name', 'pk')
 
         # Attach gender-matched images for female library
         exercises = attach_exercise_images(list(exercises), 'female')
@@ -379,17 +378,17 @@ def exercise_library(request):
         })
     else:
         # Existing male/default filters
-        body_parts = ['Back', 'Biceps', 'Calisthenics', 'Cardio', 'Chest', 'Core', 'Full Body', 'Legs', 'Shoulders']
+        body_parts = list(MALE_LIBRARY_BODY_PARTS)
         body_part = request.GET.get('body_part', '')
         if body_part not in body_parts:
             body_part = ''
 
+        exercises = exercises.filter(body_part__in=body_parts)
         if query:
             exercises = search_exercises(exercises, query)
         if body_part:
             exercises = exercises.filter(body_part=body_part)
-        if not query:
-            exercises = exercises.order_by('body_part', Lower('name'), 'name', 'pk')
+        exercises = exercises.order_by(Lower('name'), 'name', 'pk')
         equipment_labels = {
             'bodyweight': 'No equipment', 'dumbbell': 'Dumbbells',
             'band': 'Resistance Bands', 'pullup_bar': 'Pull-up Bar',

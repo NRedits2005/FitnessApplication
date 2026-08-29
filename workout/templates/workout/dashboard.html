@@ -44,7 +44,11 @@
 <!-- Personalized Featured Workout -->
 <section class="featured-workout">
   <div class="featured-image">
-    <img src="{% static 'workout/images/fitness-plus/hero_workout.jpg' %}" alt="Athlete training with dumbbells">
+    {% if is_female %}
+      <img src="{% static 'workout/images/women_workout.png' %}" alt="Woman doing a gym workout">
+    {% else %}
+      <img src="{% static 'workout/images/men_workout.png' %}" alt="Man doing a gym workout">
+    {% endif %}
   </div>
   <div class="featured-copy">
     <p class="eyebrow">TODAY'S WORKOUT</p>

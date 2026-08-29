@@ -14,121 +14,133 @@ DIET_IMAGES_DIR = os.path.join(
     settings.BASE_DIR, 'workout', 'static', 'workout', 'images', 'diet'
 )
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ───────────────────────── ─────────────────────────────────────────────────────
 # Name → filename mapping for existing photographic images in diet folder.
 # Keys are normalized (lowercase, alphanumeric characters only).
 # ──────────────────────────────────────────────────────────────────────────────
 EXISTING_IMAGE_MAP = {
-    # Apple with almonds
+    # Apple variations
     'applewithalmonds':                         'ApplewithAlmonds.png',
+    'applewithcurd':                            'Applewithcurd.png',
+    'applewithyogurt':                          'Applewithyogurt.png',
 
-    # Brown rice variations
-    'brownricewithdalandvegetables':             'BrownRicewithDalandVegetables.png',
-    'ricewithdalandvegetables':                  'BrownRicewithDalandVegetables.png',
-    'brownricewithchickenpaneerandvegetables':   'brownricewithchicken.png',
-    'brownricewithleanproteinandvegetables':     'brownricewithchicken.png',
-    'brownricewithchicken':                      'brownricewithchicken.png',
-    'brownricewithchickentofu':                  'brownricewithchicken.png',
+    # Oats variations
+    'oatseggsandbanana':                        'Oatseggsandbanana.png',
+    'oatsmilkandbanana':                        'Oatsmilkandbanana.png',
+    'oatsmilkandfruit':                         'Oatsmilkandfruit.png',
+    'oatswithmilkfruitandseeds':                'Oatswithmilkfruitandseeds.png',
+    'vegetableoatsandcurd':                     'VegetableOatsandCurd.png',
 
-    # Chapati / Roti with salad or paneer
-    'chapatiwithpaneerchickensalad':             'ChappathiwithPannerChickenSalad.png',
-    'chappathiwithpannerchickensalad':           'ChappathiwithPannerChickenSalad.png',
+    # Idli & Dosa variations
+    'idlisambarandcurd':                        'Idlisambarandcurd.png',
+    'idlisambarandfruit':                       'Idlisambarandfruit.png',
+    'idlisambareggsandfruit':                   'Idlisambareggsandfruit.png',
+    'dosasambarandfruit':                       'dosa_sambar_fruits.png',
+    'dosasambarandcurd':                        'dosa_sambar_fruits.png',
 
-    # Greek yogurt & Guava
-    'guavawithgreekyogurt':                      'GuavawithGreekYogurt.png',
-    'greekyogurtwithfruit':                      'GuavawithGreekYogurt.png',
+    # Poha variations
+    'pohawitheggsandfruit':                     'PohawithEggsandFruit.png',
+    'pohawitheggs':                            'PohawithEggsandFruit.png',
+    'pohaeggstofuandfruit':                     'Pohaeggstofuandfruit.png',
+    'pohaeggsofruit':                          'Pohaeggstofuandfruit.png',
+    'pohavegetableomeletteandfruit':            'Pohavegetableomeletteandfruit.png',
 
-    # Orange with yogurt
-    'orangewithyogurt':                          'OrangewithYogurt.png',
-    'fruitwithyogurt':                           'OrangewithYogurt.png',
+    # Upma & Eggs
+    'vegetableupmaandeggs':                     'vegtableupmaandeggs.png',
+    'upmaeggsandfruit':                         'vegtableupmaandeggs.png',
+    'upmaeggstofuandfruit':                     'vegtableupmaandeggs.png',
 
-    # Poha with eggs and fruit
-    'pohawitheggsandfruit':                      'PohawithEggsandFruit.png',
-    'pohawitheggs':                             'PohawithEggsandFruit.png',
+    # Toast & Eggs
+    'eggswholegraintoastandfruit':              'Eggswholegraintoastandfruit.png',
 
-    # Roasted chana
-    'roastedchana':                              'RoastedChana.png',
-    'roastedchanawithlemon':                     'roastedchannawithlemon.png',
-    'roastedchannawithlemon':                    'roastedchannawithlemon.png',
+    # Yogurt & Curd variations
+    'curdwithbanana':                           'Curdwithbanana.png',
+    'curdwithwalnuts':                          'Curdwithwalnuts.png',
+    'greekyogurtandnuts':                       'Greekyogurtandnuts.png',
+    'greekyogurtfruitandnuts':                  'Greekyogurtfruitandnuts.png',
+    'greekyogurtwithfruit':                     'Greekyogurtfruitandnuts.png',
+    'guavawithgreekyogurt':                     'GuavawithGreekYogurt.png',
+    'guavawithpeanuts':                         'Guavawithpeanuts.png',
+    'orangewithyogurt':                         'OrangewithYogurt.png',
+    'fruitwithyogurt':                          'OrangewithYogurt.png',
+    'curdwithberriesseasonalfruit':             'curdwithberries.jpeg',
+    'curdwithberries':                          'curdwithberries.jpeg',
+    'curdwithfruit':                            'curdwithberries.jpeg',
+    'curdwithfruitandnuts':                     'curdwithberries.jpeg',
+    'yogurtwithbanana':                         'Curdwithbanana.png',
 
-    # Roti with tofu / chicken / paneer and vegetables
-    'rotiwithtofuchickenandvegetables':          'RotiwithTofuChickenandVegetables.png',
-    'rotiwithchickenpaneerandvegetables':        'RotiwithTofuChickenandVegetables.png',
-    'rotiwithchickentofuandvegetables':          'RotiwithTofuChickenandVegetables.png',
-    'rotiwithpaneerchickenandvegetables':        'RotiwithTofuChickenandVegetables.png',
-    'rotiwithpaneertofuandvegetables':           'RotiwithTofuChickenandVegetables.png',
-    'rotiwithpaneerandvegetables':               'RotiwithTofuChickenandVegetables.png',
-    'rotiwithchickentofu':                       'RotiwithTofuChickenandVegetables.png',
-    'rotiwithtofu':                              'RotiwithTofuChickenandVegetables.png',
+    # Fruit & Nuts / Peanuts
+    'fruitwithnuts':                            'fruitwithnuts.png',
+    'fruitwithasmallservingofnuts':             'fruitwithnuts.png',
+    'bananaandmixednuts':                       'fruitwithnuts.png',
+    'bananawithnuts':                           'fruitwithnuts.png',
+    'bananawithmixednuts':                      'fruitwithnuts.png',
+    'milksoymilkwithalmonds':                   'fruitwithnuts.png',
+    'milksoymilkwithnuts':                      'fruitwithnuts.png',
+    'fruitwithpeanuts':                         'fruitwithpeanuts.png',
+    'bananawithpeanuts':                        'fruitwithpeanuts.png',
+    'bananawithpeanutbutter':                   'fruitwithpeanuts.png',
+    'peanutbuttertoast':                        'fruitwithpeanuts.png',
+    'peanutbuttertoastwithfruit':               'fruitwithpeanuts.png',
 
-    # Vegetable oats and curd
-    'vegetableoatsandcurd':                      'VegetableOatsandCurd.png',
+    # Roasted chana variations
+    'roastedchana':                             'RoastedChana.png',
+    'roastedchanaandorange':                    'Roastedchanaandorange.png',
+    'roastedchanawithcurd':                     'Roastedchanawithcurd.png',
+    'roastedchanawithlemon':                    'roastedchannawithlemon.png',
+    'roastedchannawithlemon':                   'roastedchannawithlemon.png',
 
-    # Chapati / Roti with dal and vegetables
-    'chapatiwithdalandmixedvegetables':          'chappathiwithdal.png',
-    'chapatiwithdalandvegetables':               'chappathiwithdal.png',
-    'chapatiwithmixedvegetablesanddal':          'chappathiwithdal.png',
-    'chappatiwithdalandmixedvegetables':         'chappathiwithdal.png',
-    'chappatiwithdal':                           'chappathiwithdal.png',
-    'chappathiwithdal':                          'chappathiwithdal.png',
-    'rotiwithdalandvegetables':                  'chappathiwithdal.png',
-    'rotiwithmixedvegetablesanddal':             'chappathiwithdal.png',
+    # Rice variations
+    'brownricewithdalandvegetables':            'BrownRicewithDalandVegetables.png',
+    'ricewithdalandvegetables':                 'BrownRicewithDalandVegetables.png',
+    'brownricewithchickenpaneerandvegetables':  'brownricewithchicken.png',
+    'brownricewithleanproteinandvegetables':    'brownricewithchicken.png',
+    'brownricewithchicken':                     'brownricewithchicken.png',
+    'brownricewithchickentofu':                 'brownricewithchicken.png',
+    'ricewithfishtofuandvegetables':            'ricewithfishtofuandvegetables.png',
+    'ricewithfishpaneerandvegetables':          'ricewithfishtofuandvegetables.png',
+    'ricewithfishtofu':                         'ricewithfishtofuandvegetables.png',
+    'ricewithchickenpaneerandvegetables':       'ricewithpanner.png',
+    'ricewithpaneerchickenandvegetables':       'ricewithpanner.png',
+    'ricewithchickentofuandvegetables':         'ricewithpanner.png',
+    'ricewithdalchickenandvegetables':          'ricewithpanner.png',
+    'ricewithdalpaneerandvegetables':           'ricewithpanner.png',
+    'ricewithrajmaandvegetables':               'ricewithpanner.png',
+    'brownricewithrajmaandvegetables':          'ricewithpanner.png',
+    'ricewithpanner':                           'ricewithpanner.png',
 
-    # Curd / Yogurt with fruit / berries
-    'curdwithberriesseasonalfruit':              'curdwithberries.jpeg',
-    'curdwithberries':                           'curdwithberries.jpeg',
-    'curdwithfruit':                             'curdwithberries.jpeg',
-    'curdwithfruitandnuts':                      'curdwithberries.jpeg',
-    'yogurtwithbanana':                          'curdwithberries.jpeg',
+    # Chapati & Roti variations
+    'chapatiwithvegetablesandpaneer':           'Chapatiwithvegetablesandpaneer.png',
+    'chapatiwithpaneerchickensalad':            'ChappathiwithPannerChickenSalad.png',
+    'chappathiwithpannerchickensalad':          'ChappathiwithPannerChickenSalad.png',
+    'chapatiwithdalandmixedvegetables':         'chappathiwithdal.png',
+    'chapatiwithdalandvegetables':              'chappathiwithdal.png',
+    'chapatiwithmixedvegetablesanddal':         'chappathiwithdal.png',
+    'chappatiwithdalandmixedvegetables':        'chappathiwithdal.png',
+    'chappatiwithdal':                          'chappathiwithdal.png',
+    'chappathiwithdal':                         'chappathiwithdal.png',
+    'chapatiwithdalpaneerandvegetables':        'ricewithpanner.png',
+    'chappatiwithdalpaneerandvegetables':       'ricewithpanner.png',
+    'chapatiwithfishpaneerandvegetables':       'ricewithfishtofuandvegetables.png',
+    'chapatiwithfishtofuandvegetables':         'ricewithfishtofuandvegetables.png',
+    'chappatiwithfishpaneerandvegetables':      'ricewithfishtofuandvegetables.png',
+    'rotiwithtofuchickenandvegetables':         'RotiwithTofuChickenandVegetables.png',
+    'rotiwithchickenpaneerandvegetables':       'RotiwithTofuChickenandVegetables.png',
+    'rotiwithchickentofuandvegetables':         'RotiwithTofuChickenandVegetables.png',
+    'rotiwithpaneerchickenandvegetables':       'RotiwithTofuChickenandVegetables.png',
+    'rotiwithpaneertofuandvegetables':          'RotiwithTofuChickenandVegetables.png',
+    'rotiwithpaneerandvegetables':              'RotiwithTofuChickenandVegetables.png',
+    'rotiwithchickentofu':                      'RotiwithTofuChickenandVegetables.png',
+    'rotiwithtofu':                             'RotiwithTofuChickenandVegetables.png',
+    'rotiwithdalandvegetables':                 'chappathiwithdal.png',
+    'rotiwithmixedvegetablesanddal':            'chappathiwithdal.png',
 
-    # Dosa, sambar and fruit/curd
-    'dosasambarandfruit':                        'dosa_sambar_fruits.png',
-    'dosasambarandcurd':                         'dosa_sambar_fruits.png',
+    # Soup
+    'vegetablesoupwithproteinandroti':          'vegetablesoup.png',
+    'vegetablesoup':                            'vegetablesoup.png',
 
-    # Fruit with nuts
-    'fruitwithnuts':                             'fruitwithnuts.png',
-    'fruitwithasmallservingofnuts':              'fruitwithnuts.png',
-    'bananaandmixednuts':                        'fruitwithnuts.png',
-    'bananawithnuts':                            'fruitwithnuts.png',
-    'bananawithmixednuts':                       'fruitwithnuts.png',
-    'milksoymilkwithalmonds':                    'fruitwithnuts.png',
-    'milksoymilkwithnuts':                       'fruitwithnuts.png',
-
-    # Fruit / Banana with peanuts / peanut butter
-    'fruitwithpeanuts':                          'fruitwithpeanuts.png',
-    'bananawithpeanuts':                         'fruitwithpeanuts.png',
-    'bananawithpeanutbutter':                    'fruitwithpeanuts.png',
-    'peanutbuttertoast':                         'fruitwithpeanuts.png',
-    'peanutbuttertoastwithfruit':                'fruitwithpeanuts.png',
-
-    # Rice / Chapati with fish / tofu / paneer and vegetables
-    'ricewithfishtofuandvegetables':             'ricewithfishtofuandvegetables.png',
-    'ricewithfishpaneerandvegetables':           'ricewithfishtofuandvegetables.png',
-    'ricewithfishtofu':                          'ricewithfishtofuandvegetables.png',
-    'chapatiwithfishpaneerandvegetables':        'ricewithfishtofuandvegetables.png',
-    'chapatiwithfishtofuandvegetables':          'ricewithfishtofuandvegetables.png',
-    'chappatiwithfishpaneerandvegetables':       'ricewithfishtofuandvegetables.png',
-
-    # Rice with paneer / chicken / dal / rajma
-    'ricewithchickenpaneerandvegetables':        'ricewithpanner.png',
-    'ricewithpaneerchickenandvegetables':        'ricewithpanner.png',
-    'ricewithchickentofuandvegetables':          'ricewithpanner.png',
-    'ricewithdalchickenandvegetables':           'ricewithpanner.png',
-    'ricewithdalpaneerandvegetables':            'ricewithpanner.png',
-    'ricewithrajmaandvegetables':                'ricewithpanner.png',
-    'brownricewithrajmaandvegetables':           'ricewithpanner.png',
-    'chapatiwithdalpaneerandvegetables':         'ricewithpanner.png',
-    'chappatiwithdalpaneerandvegetables':        'ricewithpanner.png',
-    'ricewithpanner':                            'ricewithpanner.png',
-
-    # Vegetable soup
-    'vegetablesoupwithproteinandroti':           'vegetablesoup.png',
-    'vegetablesoup':                             'vegetablesoup.png',
-
-    # Upma and eggs
-    'vegetableupmaandeggs':                      'vegtableupmaandeggs.png',
-    'upmaeggsandfruit':                          'vegtableupmaandeggs.png',
-    'upmaeggstofuandfruit':                      'vegtableupmaandeggs.png',
+    # Hydration
+    'keepwaternearbyanddrinkregularlythroughouttheday': 'Keepwaternearbyanddrinkregularlythroughouttheday.png',
 }
 
 # Color palettes & icons for auto-generated PNG cards per meal type
@@ -432,7 +444,13 @@ def get_diet_image_path(meal_name, meal_type='breakfast'):
     matched = find_existing_image(meal_name)
     if not matched:
         matched = create_diet_png(meal_name, meal_type)
-    return f'/static/workout/images/diet/{matched}'
+    
+    filepath = os.path.join(DIET_IMAGES_DIR, matched)
+    try:
+        v = int(os.path.getmtime(filepath))
+        return f'/static/workout/images/diet/{matched}?v={v}'
+    except OSError:
+        return f'/static/workout/images/diet/{matched}'
 
 
 def attach_diet_images(meals):
