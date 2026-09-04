@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
 from workout.models import Exercise
+from workout.exercise_male_details import MALE_EXERCISE_DETAILS
+from workout.image_utils import get_exercise_image_path
 
 
 EXERCISES = {
@@ -62,14 +64,29 @@ class Command(BaseCommand):
             for name in names.split(','):
                 bodyweight = name in BODYWEIGHT
                 body_part = {'Chest': 'Chest', 'Back': 'Back', 'Legs': 'Legs', 'Shoulders': 'Shoulders', 'Arms': 'Biceps', 'Core': 'Core', 'Calisthenics': 'Calisthenics', 'Cardio': 'Cardio', 'Full Body': 'Full Body', 'Beginner': 'Full Body'}[category]
-                image = PHOTO_OVERRIDES.get(name, f'/static/workout/images/exercise-photo-grid.png#exercise-{category.lower()}-{name.lower().replace(" ", "-")}')
-                exercise, was_created = Exercise.objects.update_or_create(name=name, defaults={
-                    'category': category, 'description': f'{name} is a straightforward {category.lower()} exercise you can fit into today’s workout.',
-                    'instructions': 'Move slowly with control, keep a comfortable range of motion, and stop if you feel sharp pain.',
-                    'muscles_targeted': category, 'beginner_tips': 'Start light, focus on smooth technique, and take the rest you need.',
-                    'body_part': body_part, 'is_bodyweight': bodyweight,
-                    'equipment_type': equipment_for(name, bodyweight), 'image': image,
-                })
+                image = get_exercise_image_path(name, category, 'male').split('?')[0]
+                details = MALE_EXERCISE_DETAILS.get(name, {})
+                desc = details.get('description', f'{name} is a straightforward {category.lower()} exercise you can fit into today’s workout.')
+                inst = details.get('instructions', 'Move slowly with control, keep a comfortable range of motion, and stop if you feel sharp pain.')
+                tips = details.get('beginner_tips', 'Start light, focus on smooth technique, and take the rest you need.')
+                
+                defaults = {
+                    'category': category,
+                    'description': desc,
+                    'instructions': inst,
+                    'muscles_targeted': category,
+                    'beginner_tips': tips,
+                    'body_part': body_part,
+                    'is_bodyweight': bodyweight,
+                    'equipment_type': equipment_for(name, bodyweight),
+                    'image': image,
+                    'gender_category': 'all',
+                    'recommended_sets': details.get('recommended_sets', '3'),
+                    'recommended_reps': details.get('recommended_reps', ''),
+                    'recommended_duration': details.get('recommended_duration', ''),
+                    'recommended_rest': details.get('recommended_rest', '60 seconds'),
+                }
+                exercise, was_created = Exercise.objects.update_or_create(name=name, defaults=defaults)
                 created += was_created
         images = list(Exercise.objects.values_list('image', flat=True))
         if len(images) != len(set(images)):

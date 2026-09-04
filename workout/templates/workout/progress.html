@@ -16,37 +16,235 @@
   {% endfor %}
 </form>
 
-{% if summary.workouts %}
+{% if summary.workouts or all_time_workouts %}
+<!-- 6 KPI Cards Row -->
 <section class="analytics-summary-grid" aria-label="{{ range_label }} summary">
-  <article class="analytics-stat card"><span>Total Workouts</span><strong>{{ summary.workouts }}</strong><small>{{ range_label }}</small></article>
-  <article class="analytics-stat card"><span>Current Streak</span><strong>{{ profile.current_streak }}<small> days</small></strong><small>Best: {{ profile.longest_streak }} days</small></article>
-  <article class="analytics-stat card"><span>Workout Time</span><strong>{{ summary.duration }}</strong><small>Completed sessions</small></article>
-  <article class="analytics-stat card"><span>Total Sets</span><strong>{{ summary.sets }}</strong><small>{{ summary.reps }} reps completed</small></article>
-  <article class="analytics-stat card"><span>Total Reps</span><strong>{{ summary.reps }}</strong><small>Across completed sets</small></article>
-  <article class="analytics-stat card"><span>Total Volume</span><strong>{{ summary.volume }}<small> kg</small></strong><small>External weight only</small></article>
+  <article class="analytics-stat card">
+    <span>TOTAL WORKOUTS</span>
+    <strong>{{ summary.workouts }}</strong>
+    <small>{{ range_label|upper }}</small>
+  </article>
+  <article class="analytics-stat card">
+    <span>CURRENT STREAK</span>
+    <strong>{{ profile.current_streak }}<small> days</small></strong>
+    <small>BEST: {{ profile.longest_streak }} DAYS</small>
+  </article>
+  <article class="analytics-stat card">
+    <span>WORKOUT TIME</span>
+    <strong>{{ summary.duration }}</strong>
+    <small>COMPLETED SESSIONS</small>
+  </article>
+  <article class="analytics-stat card">
+    <span>TOTAL SETS</span>
+    <strong>{{ summary.sets }}</strong>
+    <small>{{ summary.reps }} REPS COMPLETED</small>
+  </article>
+  <article class="analytics-stat card">
+    <span>TOTAL REPS</span>
+    <strong>{{ summary.reps }}</strong>
+    <small>ACROSS COMPLETED SETS</small>
+  </article>
+  <article class="analytics-stat card">
+    <span>TOTAL VOLUME</span>
+    <strong>{{ summary.volume }}<small> kg</small></strong>
+    <small>EXTERNAL WEIGHT ONLY</small>
+  </article>
 </section>
 
+<!-- 12-Month Workout Activity Heatmap -->
 <section class="analytics-panel card heatmap-panel">
-  <div class="analytics-panel-heading"><div><p class="eyebrow">YOUR ACTIVITY</p><h2>12-month workout activity</h2></div><p>Hover or tap a day to see its workout count.</p></div>
-  <div id="activity-heatmap" class="activity-heatmap" aria-label="Workout activity heatmap"></div>
-  <div class="heatmap-legend"><span>Less</span><i class="level-0"></i><i class="level-1"></i><i class="level-2"></i><i class="level-3"></i><span>More</span></div>
+  <div class="analytics-panel-heading">
+    <div>
+      <p class="eyebrow">YOUR ACTIVITY</p>
+      <h2>12-month workout activity</h2>
+    </div>
+    <p>Hover or tap a day to see its workout count.</p>
+  </div>
+  <div class="heatmap-wrapper">
+    <div class="heatmap-weekdays" aria-hidden="true">
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
+      <span>Sun</span>
+    </div>
+    <div class="heatmap-grid-scroll">
+      <div id="heatmap-months" class="heatmap-months" aria-hidden="true"></div>
+      <div id="activity-heatmap" class="activity-heatmap" aria-label="Workout activity heatmap"></div>
+    </div>
+  </div>
+  <div class="heatmap-legend">
+    <span>Less</span>
+    <i class="level-0"></i>
+    <i class="level-1"></i>
+    <i class="level-2"></i>
+    <i class="level-3"></i>
+    <span>More</span>
+  </div>
 </section>
 
+<!-- 2 Analytics Charts Side-by-Side -->
 <section class="analytics-charts-grid">
-  <article class="analytics-panel card"><div class="analytics-panel-heading"><div><p class="eyebrow">CONSISTENCY</p><h2>Workout Frequency</h2></div><p>Completed workouts by day</p></div><div id="frequency-chart" class="chart-area"></div></article>
-  <article class="analytics-panel card"><div class="analytics-panel-heading"><div><p class="eyebrow">STRENGTH</p><h2>Training Volume</h2></div><p>External weight lifted (kg)</p></div><div id="volume-chart" class="chart-area"></div></article>
+  <article class="analytics-panel card">
+    <div class="analytics-panel-heading">
+      <div>
+        <p class="eyebrow">CONSISTENCY</p>
+        <h2>Workout Frequency</h2>
+      </div>
+      <p>Completed workouts by day</p>
+    </div>
+    <div id="frequency-chart" class="chart-area"></div>
+  </article>
+  <article class="analytics-panel card">
+    <div class="analytics-panel-heading">
+      <div>
+        <p class="eyebrow">STRENGTH</p>
+        <h2>Training Volume</h2>
+      </div>
+      <p>External weight lifted (kg)</p>
+    </div>
+    <div id="volume-chart" class="chart-area"></div>
+  </article>
 </section>
 
-{% if insights %}
-<section class="analytics-panel card insights-panel"><p class="eyebrow">PROGRESS INSIGHTS</p><h2>What your activity shows</h2><ul class="insights-list">{% for insight in insights %}<li>{{ insight }}</li>{% endfor %}</ul></section>
-{% endif %}
+<!-- Progress Insights & Achievements Side-by-Side -->
+<div class="insights-achievements-row">
+  {% if insights %}
+  <section class="analytics-panel card insights-panel">
+    <p class="eyebrow">PROGRESS INSIGHTS</p>
+    <h2>What your activity shows</h2>
+    <ul class="insights-list">
+      {% for insight in insights %}
+      <li>{{ insight }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
 
-<section class="analytics-panel card milestones-panel"><p class="eyebrow">MILESTONES</p><h2>Achievements</h2><div class="milestones-grid">{% for target, label in milestones %}<div class="milestone{% if all_time_workouts >= target %} earned{% endif %}"><span>{% if all_time_workouts >= target %}✓{% else %}○{% endif %}</span><div><strong>{{ label }}</strong><small>{% if all_time_workouts >= target %}Achieved{% else %}Keep going{% endif %}</small></div></div>{% endfor %}{% for target, label in streak_milestones %}<div class="milestone{% if profile.longest_streak >= target %} earned{% endif %}"><span>{% if profile.longest_streak >= target %}✓{% else %}○{% endif %}</span><div><strong>{{ label }}</strong><small>{% if profile.longest_streak >= target %}Achieved{% else %}Keep building your streak{% endif %}</small></div></div>{% endfor %}</div></section>
+  <section class="analytics-panel card milestones-panel">
+    <p class="eyebrow">MILESTONES</p>
+    <h2>Achievements</h2>
+    <div class="milestones-grid">
+      {% for target, label in milestones %}
+      <div class="milestone{% if all_time_workouts >= target %} earned{% endif %}">
+        <span>{% if all_time_workouts >= target %}✓{% else %}○{% endif %}</span>
+        <div>
+          <strong>{{ label }}</strong>
+          <small>{% if all_time_workouts >= target %}Achieved{% else %}Keep going{% endif %}</small>
+        </div>
+      </div>
+      {% endfor %}
+      {% for target, label in streak_milestones %}
+      <div class="milestone{% if profile.longest_streak >= target %} earned{% endif %}">
+        <span>{% if profile.longest_streak >= target %}✓{% else %}○{% endif %}</span>
+        <div>
+          <strong>{{ label }}</strong>
+          <small>{% if profile.longest_streak >= target %}Achieved{% else %}Keep building your streak{% endif %}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
 
-<section class="analytics-panel card progress-history"><div class="analytics-panel-heading"><div><p class="eyebrow">WORKOUT HISTORY</p><h2>Completed workouts</h2></div><p>{{ history|length }} in {{ range_label|lower }}</p></div><div class="history-table-wrap"><table><thead><tr><th>Date</th><th>Workout</th><th>Exercises</th><th>Sets</th><th>Reps</th><th>Volume</th><th>Duration</th><th></th></tr></thead><tbody>{% for item in history %}<tr><td>{{ item.workout.date|date:'M j, Y' }}</td><td>Workout <span class="badge badge-success">Completed</span></td><td>{{ item.exercise_count }}</td><td>{{ item.sets }}</td><td>{{ item.reps }}</td><td>{{ item.volume }} kg</td><td>{{ item.duration }}</td><td><a href="{% url 'workout:workout_history_detail' item.workout.id %}">Details</a></td></tr>{% endfor %}</tbody></table></div></section>
+<!-- Workout History -->
+<section class="analytics-panel card progress-history">
+  <div class="analytics-panel-heading">
+    <div>
+      <p class="eyebrow">WORKOUT HISTORY</p>
+      <h2>Completed workouts</h2>
+    </div>
+    <p>{{ history|length }} in {{ range_label|lower }}</p>
+  </div>
+  <div class="history-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Workout</th>
+          <th>Exercises</th>
+          <th>Sets</th>
+          <th>Reps</th>
+          <th>Volume</th>
+          <th>Duration</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in history %}
+        <tr>
+          <td>{{ item.workout.date|date:'M j, Y' }}</td>
+          <td>Workout <span class="badge badge-success">Completed</span></td>
+          <td>{{ item.exercise_count }}</td>
+          <td>{{ item.sets }}</td>
+          <td>{{ item.reps }}</td>
+          <td>{{ item.volume }} kg</td>
+          <td>{{ item.duration }}</td>
+          <td><a href="{% url 'workout:workout_history_detail' item.workout.id %}">Details</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% else %}
-<section class="empty-state card analytics-empty"><div class="empty-icon">📈</div><h2>{% if all_time_workouts %}No workouts in this time range{% else %}Your progress will appear here{% endif %}</h2><p>{% if all_time_workouts %}Try a wider time range to review earlier completed workouts.{% else %}No workouts yet. Complete your first workout to start tracking your progress.{% endif %}</p><a class="button" href="{% url 'workout:start_workout' %}">Start Workout</a></section>
+<section class="empty-state card analytics-empty">
+  <div class="empty-icon">📈</div>
+  <h2>Your progress will appear here</h2>
+  <p>No workouts yet. Complete your first workout to start tracking your progress.</p>
+  <a class="button" href="{% url 'workout:start_workout' %}">Start Workout</a>
+</section>
 {% endif %}
+
+<!-- Centered Interactive Day Details Modal -->
+<div id="heatmap-modal-backdrop" class="modal-backdrop" hidden aria-hidden="true" style="display: none;">
+  <div id="heatmap-modal" class="day-modal card" role="dialog" aria-modal="true" aria-labelledby="modal-date-title">
+    <div class="modal-header">
+      <h3 id="modal-date-title" class="modal-date-title">Selected Date</h3>
+      <button id="modal-close-btn" class="modal-close" type="button" aria-label="Close modal">&times;</button>
+    </div>
+    <div id="modal-content-has-workouts" class="modal-content-area">
+      <div class="modal-summary-banner">
+        <span class="banner-badge">✓</span>
+        <strong id="modal-workout-count-text">0 Workouts Completed</strong>
+        <span class="banner-clock-time">🕒 Total Time: <span id="modal-total-time-text">—</span></span>
+      </div>
+      <div class="modal-section-label">WORKOUTS</div>
+      <div id="modal-workouts-container" class="modal-workouts-container">
+        <!-- Dynamically rendered workout cards -->
+      </div>
+      <div class="modal-summary-grid">
+        <div class="summary-col">
+          <span class="col-lbl">Exercises</span>
+          <strong id="modal-sum-exercises">0</strong>
+        </div>
+        <div class="summary-col">
+          <span class="col-lbl">Sets</span>
+          <strong id="modal-sum-sets">0</strong>
+        </div>
+        <div class="summary-col">
+          <span class="col-lbl">Reps</span>
+          <strong id="modal-sum-reps">0</strong>
+        </div>
+        <div class="summary-col">
+          <span class="col-lbl">Volume</span>
+          <strong id="modal-sum-volume">0 kg</strong>
+        </div>
+      </div>
+      <div class="modal-footer-link">
+        <a id="modal-view-day-details-btn" href="#" class="view-day-details-link">View Day Details &rarr;</a>
+      </div>
+    </div>
+    <div id="modal-content-empty" class="modal-empty-area" hidden>
+      <div class="modal-empty-icon">📅</div>
+      <h4>No workouts completed</h4>
+      <p>Take the next step toward your goal.</p>
+      <a href="{% url 'workout:start_workout' %}" class="button">Start Workout</a>
+    </div>
+  </div>
+</div>
 
 {{ chart_data|json_script:'progress-chart-data' }}
 <script src="{% static 'workout/js/progress.js' %}"></script>

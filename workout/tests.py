@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Exercise, UserProfile
+from .models import DietMeal, Exercise, UserProfile, Workout, WorkoutExercise, WorkoutSet
 
 
 class ExerciseLibraryProfileFilteringTests(TestCase):
@@ -696,5 +696,808 @@ class DashboardRecommendationsCountTests(TestCase):
         self.client.login(username='male-user', password='password')
         response = self.client.get(reverse('workout:dashboard'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['plan']['exercises']), 4)
-        self.assertContains(response, "Recommended exercises")
+        self.assertContains(response, "Men's Fitness")
+        self.assertContains(response, "Top 4 recommended exercises")
+
+
+class DietNavigationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.core.management import call_command
+        call_command('seed_diet_meals')
+
+    def test_all_five_goals_have_seven_days_and_six_meals(self):
+        goals = ('bulk', 'cut', 'maintain', 'strength', 'fitness')
+        expected_slots = ('breakfast', 'morning_snack', 'lunch', 'evening_snack', 'dinner', 'hydration')
+        for goal in goals:
+            for day in range(7):
+                meals = list(DietMeal.objects.filter(goal=goal, day_of_week=day))
+                self.assertEqual(len(meals), 6, f"Goal {goal} Day {day+1} should have exactly 6 meals")
+                slot_types = tuple(m.meal_type for m in meals)
+                self.assertEqual(set(slot_types), set(expected_slots))
+
+    def test_existing_cut_meals_preserved(self):
+        # Day 1 of Cut must have exact requested meals
+        day1_meals = {m.meal_type: m.name for m in DietMeal.objects.filter(goal='cut', day_of_week=0)}
+        self.assertEqual(day1_meals['breakfast'], 'Vegetable upma + 2 eggs')
+        self.assertEqual(day1_meals['morning_snack'], 'Apple + a small handful of almonds')
+        self.assertEqual(day1_meals['lunch'], 'Brown rice + chicken/paneer + vegetables')
+        self.assertEqual(day1_meals['evening_snack'], 'Roasted chana + lemon')
+        self.assertEqual(day1_meals['dinner'], 'Vegetable soup + paneer/chicken + 1–2 roti')
+        self.assertEqual(day1_meals['hydration'], 'Keep water nearby and drink regularly throughout the day.')
+
+    def test_case_1_new_user_actual_first_day_hides_previous_and_shows_next(self):
+        user = User.objects.create_user('case1-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='cut')
+        self.client.login(username='case1-user', password='password')
+
+        response = self.client.get(reverse('workout:diet'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, '← Previous Day')
+        self.assertContains(response, 'Today')
+        self.assertContains(response, 'Next Day →')
+
+    def test_case_2_day_2_shows_both_previous_and_next(self):
+        user = User.objects.create_user('case2-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='cut')
+        self.client.login(username='case2-user', password='password')
+
+        # Navigate to next day (Day 2 of user experience: offset 1)
+        response = self.client.get(reverse('workout:diet'), {'offset': 1})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '← Previous Day')
+        self.assertContains(response, 'Today')
+        self.assertContains(response, 'Next Day →')
+
+    def test_case_3_day_7_shows_both_previous_and_next(self):
+        user = User.objects.create_user('case3-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='cut')
+        self.client.login(username='case3-user', password='password')
+
+        # Navigate to Day 7 of user experience (offset 6)
+        response = self.client.get(reverse('workout:diet'), {'offset': 6})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '← Previous Day')
+        self.assertContains(response, 'Today')
+        self.assertContains(response, 'Next Day →')
+
+    def test_case_4_day_7_next_loops_to_day_1_with_previous_available_to_day_7(self):
+        user = User.objects.create_user('case4-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='cut')
+        self.client.login(username='case4-user', password='password')
+
+        # Get Day 7
+        r_d7 = self.client.get(reverse('workout:diet'), {'day': 7})
+        self.assertEqual(r_d7.context['day_number'], 7)
+        self.assertContains(r_d7, 'Oats + milk + fruit + eggs')
+        offset_d7 = r_d7.context['offset']
+
+        # Next from Day 7 -> Day 1 (offset_d7 + 1)
+        r_looped_d1 = self.client.get(reverse('workout:diet'), {'offset': offset_d7 + 1})
+        self.assertEqual(r_looped_d1.status_code, 200)
+        self.assertEqual(r_looped_d1.context['day_number'], 1)
+        self.assertContains(r_looped_d1, '← Previous Day')
+        self.assertContains(r_looped_d1, 'Today')
+        self.assertContains(r_looped_d1, 'Next Day →')
+        self.assertContains(r_looped_d1, 'Vegetable upma + 2 eggs')
+
+        # Looped Day 1 -> Previous -> Day 7 (offset_d7)
+        r_back_to_d7 = self.client.get(reverse('workout:diet'), {'offset': offset_d7})
+        self.assertEqual(r_back_to_d7.status_code, 200)
+        self.assertEqual(r_back_to_d7.context['day_number'], 7)
+        self.assertContains(r_back_to_d7, 'Oats + milk + fruit + eggs')
+
+    def test_case_5_actual_first_ever_day_previous_is_not_available(self):
+        user = User.objects.create_user('case5-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='cut')
+        self.client.login(username='case5-user', password='password')
+
+        # Attempting to navigate before actual first day (e.g. offset -1) is clamped to start date
+        response = self.client.get(reverse('workout:diet'), {'offset': -1})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['offset'], 0)
+        self.assertNotContains(response, '← Previous Day')
+        self.assertContains(response, 'Today')
+        self.assertContains(response, 'Next Day →')
+
+    def test_goals_remain_unchanged_during_wrapping(self):
+        goals_data = {
+            'cut': ('Vegetable upma + 2 eggs', 'Oats + milk + fruit + eggs'),
+            'bulk': ('Oats with milk, banana + 2–3 eggs', 'Idli + sambar + eggs + fruit'),
+            'maintain': ('Vegetable dosa + sambar + 2 eggs', 'Dosa + sambar + eggs + fruit'),
+            'strength': ('Oats with milk + banana + 3 eggs', 'Vegetable upma + eggs + curd + fruit'),
+            'fitness': ('Vegetable upma + 2 eggs + curd', 'Vegetable oats + eggs + curd'),
+        }
+        for goal, (day1_meal, day7_meal) in goals_data.items():
+            user = User.objects.create_user(f'diet-wrap-{goal}', password='password')
+            UserProfile.objects.create(user=user, profile_completed=True, goal=goal)
+            self.client.login(username=f'diet-wrap-{goal}', password='password')
+
+            # Day 7 -> Next -> Day 1
+            r_d7 = self.client.get(reverse('workout:diet'), {'day': 7})
+            self.assertContains(r_d7, day7_meal)
+            offset_d7 = r_d7.context['offset']
+
+            r_d1 = self.client.get(reverse('workout:diet'), {'offset': offset_d7 + 1})
+            self.assertEqual(r_d1.context['day_number'], 1)
+            self.assertContains(r_d1, day1_meal)
+
+            # Day 1 -> Previous -> Day 7
+            offset_d1 = r_d1.context['offset']
+            r_d7_prev = self.client.get(reverse('workout:diet'), {'offset': offset_d1 - 1})
+            self.assertEqual(r_d7_prev.context['day_number'], 7)
+            self.assertContains(r_d7_prev, day7_meal)
+
+    def test_cut_exact_seven_day_plan_meals(self):
+        user = User.objects.create_user('cut-exact-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='cut')
+        self.client.login(username='cut-exact-user', password='password')
+
+        expected_days = {
+            1: ('Vegetable upma + 2 eggs', 'Apple + a small handful of almonds', 'Brown rice + chicken/paneer + vegetables', 'Roasted chana + lemon', 'Vegetable soup + paneer/chicken + 1–2 roti'),
+            2: ('Idli + sambar + curd', 'Greek yogurt + fruit', 'Rice + dal + vegetables + grilled chicken/tofu', 'Guava + peanuts', 'Roti + paneer/chicken + vegetables'),
+            3: ('Eggs + whole-grain toast + fruit', 'Apple + curd', 'Brown rice + lean chicken/tofu + vegetables', 'Fruit + a small handful of nuts', 'Roti + dal + mixed vegetables'),
+            4: ('Vegetable oats + curd', 'Guava + Greek yogurt', 'Rice + fish/paneer + vegetables', 'Roasted chana', 'Vegetable soup + 1–2 roti + protein'),
+            5: ('Poha with vegetables + eggs', 'Orange + yogurt', 'Brown rice + dal + vegetables + chicken/tofu', 'Apple + almonds', 'Roti + paneer + vegetables'),
+            6: ('Dosa + sambar + eggs', 'Fruit + curd', 'Rice + fish/chicken + vegetables', 'Roasted chana + fruit', 'Roti + dal + vegetables'),
+            7: ('Oats + milk + fruit + eggs', 'Greek yogurt + fruit', 'Brown rice + chicken/paneer + vegetables', 'Guava + a small handful of peanuts', 'Vegetable soup + dal + 1–2 roti'),
+        }
+
+        for day_num, meals in expected_days.items():
+            resp = self.client.get(reverse('workout:diet'), {'day': day_num})
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'Lose Fat / Cut')
+            for m in meals:
+                self.assertContains(resp, m)
+
+    def test_maintain_exact_seven_day_plan_meals(self):
+        user = User.objects.create_user('maint-exact-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='maintain')
+        self.client.login(username='maint-exact-user', password='password')
+
+        expected_days = {
+            1: ('Vegetable dosa + sambar + 2 eggs', 'Apple + Greek yogurt', 'Rice + dal + mixed vegetables + grilled chicken/paneer', 'Roasted chana + seasonal fruit', '2 roti + paneer/tofu + mixed vegetables'),
+            2: ('Oats with milk + banana + almonds', 'Guava + curd', 'Brown rice + chicken/tofu + vegetables', 'Fruit + small handful of peanuts', 'Chapati + dal + vegetable curry + curd'),
+            3: ('Idli + sambar + curd + fruit', 'Greek yogurt + mixed fruit', 'Rice + fish/paneer + vegetables', 'Apple + almonds', 'Roti + chicken/tofu + vegetable curry'),
+            4: ('Vegetable poha + 2 eggs + fruit', 'Banana + curd', 'Brown rice + dal + vegetables + paneer', 'Roasted chana + fruit', 'Chapati + chicken/fish + vegetables'),
+            5: ('Vegetable upma + eggs + curd', 'Orange + Greek yogurt', 'Rice + chicken/tofu + dal + vegetables', 'Apple + small handful of nuts', 'Roti + paneer + vegetables + curd'),
+            6: ('Whole-grain toast + vegetable omelette + fruit', 'Guava + peanuts', 'Brown rice + fish/chicken + vegetables', 'Greek yogurt + banana', 'Chapati + dal + mixed vegetables + paneer/tofu'),
+            7: ('Dosa + sambar + eggs + fruit', 'Curd + almonds + seasonal fruit', 'Rice + paneer/chicken + dal + vegetables', 'Roasted chana + banana', 'Roti + fish/tofu + vegetables + curd'),
+        }
+
+        for day_num, meals in expected_days.items():
+            resp = self.client.get(reverse('workout:diet'), {'day': day_num})
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'Maintain Weight')
+            for m in meals:
+                self.assertContains(resp, m)
+
+    def test_strength_exact_seven_day_plan_meals(self):
+        user = User.objects.create_user('strength-exact-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='strength')
+        self.client.login(username='strength-exact-user', password='password')
+
+        expected_days = {
+            1: ('Oats with milk + banana + 3 eggs', 'Greek yogurt + banana + walnuts', 'Chicken + rice + dal + mixed vegetables', 'Peanut butter whole-grain toast + fruit', 'Roti + chicken/paneer + vegetables + curd'),
+            2: ('Vegetable omelette + whole-grain toast + fruit', 'Milk + banana + almonds', 'Brown rice + fish + vegetables + dal', 'Roasted chana + fruit', 'Chapati + paneer + vegetable curry + curd'),
+            3: ('Idli + sambar + 3 eggs + fruit', 'Greek yogurt + nuts', 'Rice + chicken + dal + vegetables', 'Banana + peanut butter', 'Roti + fish + vegetables + curd'),
+            4: ('Poha with peanuts + eggs + curd', 'Milk + banana + almonds', 'Rice + paneer + dal + mixed vegetables', 'Whole-grain toast + Greek yogurt', 'Chapati + chicken + vegetables + dal'),
+            5: ('Dosa + sambar + eggs + curd', 'Banana + Greek yogurt + walnuts', 'Brown rice + chicken + vegetables + dal', 'Roasted chana + fruit', 'Roti + paneer/tofu + vegetables + curd'),
+            6: ('Oats + milk + banana + peanut butter + eggs', 'Curd + fruit + almonds', 'Rice + fish/chicken + dal + vegetables', 'Peanut butter whole-grain toast + banana', 'Chapati + chicken/paneer + vegetables'),
+            7: ('Vegetable upma + eggs + curd + fruit', 'Greek yogurt + banana + nuts', 'Rice + chicken/paneer + dal + vegetables', 'Milk + banana + peanut butter', 'Roti + fish/tofu + vegetables + curd'),
+        }
+
+        for day_num, meals in expected_days.items():
+            resp = self.client.get(reverse('workout:diet'), {'day': day_num})
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'Build Strength')
+            for m in meals:
+                self.assertContains(resp, m)
+
+    def test_fitness_exact_seven_day_plan_meals(self):
+        user = User.objects.create_user('fitness-exact-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='fitness')
+        self.client.login(username='fitness-exact-user', password='password')
+
+        expected_days = {
+            1: ('Vegetable upma + 2 eggs + curd', 'Apple + Greek yogurt', 'Rice + dal + mixed vegetables + chicken/paneer', 'Roasted chana + seasonal fruit', '2 roti + paneer/tofu + mixed vegetables'),
+            2: ('Idli + sambar + curd + fruit', 'Guava + a small handful of almonds', 'Brown rice + chicken/tofu + vegetables', 'Banana + peanuts', 'Chapati + dal + vegetable curry + curd'),
+            3: ('Oats with milk + banana + nuts', 'Greek yogurt + seasonal fruit', 'Rice + fish/paneer + vegetables + dal', 'Roasted chana + fruit', 'Roti + chicken/tofu + mixed vegetables'),
+            4: ('Vegetable poha + 2 eggs + fruit', 'Apple + curd', 'Brown rice + dal + paneer + vegetables', 'Greek yogurt + banana', 'Chapati + chicken/fish + vegetables'),
+            5: ('Dosa + sambar + eggs + fruit', 'Guava + Greek yogurt', 'Rice + chicken/tofu + dal + vegetables', 'Apple + almonds', 'Roti + paneer + vegetable curry + curd'),
+            6: ('Whole-grain toast + vegetable omelette + fruit', 'Banana + curd + a few nuts', 'Brown rice + fish/chicken + vegetables', 'Roasted chana + seasonal fruit', 'Chapati + dal + paneer/tofu + vegetables'),
+            7: ('Vegetable oats + eggs + curd', 'Orange + Greek yogurt', 'Rice + paneer/chicken + dal + vegetables', 'Fruit + mixed nuts', 'Roti + fish/tofu + vegetables + curd'),
+        }
+
+        for day_num, meals in expected_days.items():
+            resp = self.client.get(reverse('workout:diet'), {'day': day_num})
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'General Fitness')
+            for m in meals:
+                self.assertContains(resp, m)
+
+    def test_bulk_exact_seven_day_plan_meals(self):
+        user = User.objects.create_user('bulk-exact-user', password='password')
+        UserProfile.objects.create(user=user, profile_completed=True, goal='bulk')
+        self.client.login(username='bulk-exact-user', password='password')
+
+        expected_days = {
+            1: ('Oats with milk, banana + 2–3 eggs', 'Greek yogurt + almonds', 'Rice + chicken/paneer + vegetables', 'Peanut butter whole-grain toast + fruit', 'Roti + paneer/chicken + dal + vegetables'),
+            2: ('3–4 eggs + whole-grain toast + banana', 'Curd + mixed nuts', 'Brown rice + chicken/tofu + dal + vegetables', 'Banana + peanut butter', 'Chapati + paneer curry + vegetables'),
+            3: ('Vegetable dosa + sambar + eggs', 'Greek yogurt + banana + walnuts', 'Rice + fish/paneer + vegetables', 'Sprouts + fruit', 'Roti + chicken/tofu + dal'),
+            4: ('Vegetable upma + eggs + curd', 'Milk + banana + almonds', 'Rice + chicken/paneer + rajma + vegetables', 'Peanut butter sandwich + fruit', 'Chapati + fish/paneer + vegetables'),
+            5: ('Poha with peanuts + eggs + fruit', 'Greek yogurt + nuts', 'Brown rice + chicken/tofu + dal + vegetables', 'Milk + banana + peanut butter', 'Roti + paneer/chicken + vegetables'),
+            6: ('Oats + milk + banana + peanut butter + eggs', 'Curd + fruit + almonds', 'Rice + fish/chicken/paneer + dal + vegetables', 'Sprouts + whole-grain toast', 'Chapati + chicken/paneer + vegetables'),
+            7: ('Idli + sambar + eggs + fruit', 'Greek yogurt + banana + nuts', 'Rice + chicken/paneer + dal + vegetables', 'Peanut butter toast + milk', 'Roti + paneer/tofu + vegetables + curd'),
+        }
+
+        for day_num, meals in expected_days.items():
+            resp = self.client.get(reverse('workout:diet'), {'day': day_num})
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'Build Muscle / Bulk')
+            for m in meals:
+                self.assertContains(resp, m)
+
+    def test_changing_profile_goal_changes_diet_page_meals(self):
+        user = User.objects.create_user('diet-goal-switch', password='password')
+        profile = UserProfile.objects.create(user=user, profile_completed=True, goal='cut')
+        self.client.login(username='diet-goal-switch', password='password')
+
+        # On Cut, day 1 shows Vegetable upma + 2 eggs
+        resp_cut = self.client.get(reverse('workout:diet'), {'day': 1})
+        self.assertContains(resp_cut, 'Vegetable upma + 2 eggs')
+        self.assertContains(resp_cut, 'Lose Fat / Cut')
+
+        # Change goal to Bulk
+        profile.goal = 'bulk'
+        profile.save(update_fields=['goal'])
+        resp_bulk = self.client.get(reverse('workout:diet'), {'day': 1})
+        self.assertContains(resp_bulk, 'Oats with milk, banana + 2–3 eggs')
+        self.assertContains(resp_bulk, 'Build Muscle / Bulk')
+
+        # Change goal to Maintain
+        profile.goal = 'maintain'
+        profile.save(update_fields=['goal'])
+        resp_maint = self.client.get(reverse('workout:diet'), {'day': 1})
+        self.assertContains(resp_maint, 'Vegetable dosa + sambar + 2 eggs')
+        self.assertContains(resp_maint, 'Maintain Weight')
+
+        # Change goal to Strength
+        profile.goal = 'strength'
+        profile.save(update_fields=['goal'])
+        resp_str = self.client.get(reverse('workout:diet'), {'day': 1})
+        self.assertContains(resp_str, 'Oats with milk + banana + 3 eggs')
+        self.assertContains(resp_str, 'Build Strength')
+
+        # Change goal to Fitness
+        profile.goal = 'fitness'
+        profile.save(update_fields=['goal'])
+        resp_fit = self.client.get(reverse('workout:diet'), {'day': 1})
+        self.assertContains(resp_fit, 'Vegetable upma + 2 eggs + curd')
+        self.assertContains(resp_fit, 'General Fitness')
+
+        # Change goal back to Cut
+        profile.goal = 'cut'
+        profile.save(update_fields=['goal'])
+        resp_cut2 = self.client.get(reverse('workout:diet'), {'day': 1})
+        self.assertContains(resp_cut2, 'Vegetable upma + 2 eggs')
+        self.assertContains(resp_cut2, 'Lose Fat / Cut')
+
+
+class DashboardRecommendationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.core.management import call_command
+        call_command('seed_exercises')
+
+    def test_male_dashboard_recommended_section_structure(self):
+        user = User.objects.create_user('male-dash-user', password='password')
+        profile = UserProfile.objects.create(
+            user=user, profile_completed=True, gender='male',
+            goal='cut', workout_location='gym', experience_level='beginner'
+        )
+        self.client.login(username='male-dash-user', password='password')
+
+        response = self.client.get(reverse('workout:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+        # Heading and subtitle
+        self.assertContains(response, "Men's Fitness")
+        self.assertContains(response, "Top 4 recommended exercises curated for your goals and experience level.")
+        self.assertContains(response, "PERSONALIZED FOR YOU")
+        self.assertContains(response, "Browse All Exercises")
+
+        # Context has exactly 4 exercises
+        exercises = response.context['plan']['exercises']
+        self.assertEqual(len(exercises), 4)
+
+        # Card elements: View Details, bodypart badge
+        self.assertContains(response, "View Details")
+
+    def test_female_dashboard_recommended_section_structure(self):
+        user = User.objects.create_user('female-dash-user', password='password')
+        profile = UserProfile.objects.create(
+            user=user, profile_completed=True, gender='female',
+            goal='cut', workout_location='home', experience_level='beginner'
+        )
+        self.client.login(username='female-dash-user', password='password')
+
+        response = self.client.get(reverse('workout:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, "Women's Fitness")
+        self.assertContains(response, "Top 4 recommended exercises curated for your goals and experience level.")
+        self.assertContains(response, "Browse All Exercises")
+        self.assertContains(response, "View Details")
+
+        exercises = response.context['plan']['exercises']
+        self.assertEqual(len(exercises), 4)
+
+
+class MaleExerciseDetailsTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.core.management import call_command
+        call_command('seed_exercises')
+        call_command('seed_womens_exercises')
+
+    def test_ninety_four_male_exercises_have_unique_details(self):
+        from workout.recommendations import get_available_exercises, MALE_LIBRARY_BODY_PARTS
+        user = User.objects.create_user('male-detail-user', password='password')
+        profile = UserProfile.objects.create(
+            user=user, profile_completed=True, gender='male',
+            goal='fitness', workout_location='gym'
+        )
+        male_exercises = get_available_exercises(profile).filter(body_part__in=MALE_LIBRARY_BODY_PARTS)
+        self.assertEqual(male_exercises.count(), 94)
+
+        descriptions = set()
+        instructions_set = set()
+        beginner_tips_set = set()
+
+        for ex in male_exercises:
+            self.assertTrue(len(ex.description.strip()) >= 30, f"{ex.name} description is too short")
+            self.assertNotIn("straightforward", ex.description.lower())
+            descriptions.add(ex.description.strip())
+
+            steps = [line.strip() for line in ex.instructions.split('\n') if line.strip() and line.strip()[0].isdigit()]
+            self.assertTrue(4 <= len(steps) <= 6, f"{ex.name} has {len(steps)} steps instead of 4-6")
+            self.assertNotIn("move slowly with control", ex.instructions.lower())
+            instructions_set.add(ex.instructions.strip())
+
+            self.assertTrue(len(ex.beginner_tips.strip()) >= 20, f"{ex.name} beginner tip is too short")
+            self.assertNotIn("start light, focus on smooth technique", ex.beginner_tips.lower())
+            beginner_tips_set.add(ex.beginner_tips.strip())
+
+        self.assertEqual(len(descriptions), 94)
+        self.assertEqual(len(instructions_set), 94)
+        self.assertEqual(len(beginner_tips_set), 94)
+
+    def test_exercise_detail_page_removes_duplicate_category_badge(self):
+        user = User.objects.create_user('detail-badge-user', password='password')
+        UserProfile.objects.create(
+            user=user, profile_completed=True, gender='male',
+            goal='fitness', workout_location='gym'
+        )
+        self.client.login(username='detail-badge-user', password='password')
+
+        # Bear Crawl has category='Full Body', body_part='Full Body', difficulty='intermediate'
+        bear_crawl = Exercise.objects.get(name='Bear Crawl')
+        resp = self.client.get(reverse('workout:exercise_detail', args=[bear_crawl.id]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Bear Crawl is a full-body dynamic movement')
+        self.assertContains(resp, '<li>Start on all fours with hands stacked under your shoulders and knees under your hips.</li>')
+        self.assertContains(resp, 'Do not let your hips rise into the air')
+
+        # In media-badges, 'Full Body' should appear only once as a badge
+        content = resp.content.decode()
+        start = content.find('class="media-badges"')
+        end = content.find('</div>', start)
+        media_badges_html = content[start:end]
+        self.assertEqual(media_badges_html.count('Full Body'), 1)
+
+    def test_workout_session_movement_form_numbered_list(self):
+        user = User.objects.create_user('session-form-user', password='password')
+        UserProfile.objects.create(
+            user=user, profile_completed=True, gender='male',
+            goal='fitness', workout_location='gym'
+        )
+        self.client.login(username='session-form-user', password='password')
+
+        from workout.models import Workout, WorkoutExercise
+        workout = Workout.objects.create(user=user)
+        back_squat = Exercise.objects.get(name='Back Squat')
+        entry = WorkoutExercise.objects.create(
+            workout=workout, exercise=back_squat,
+            sets_planned=3, reps_planned=10, rest_seconds=60, exercise_seconds=45
+        )
+
+        resp = self.client.get(reverse('workout:workout_session', args=[entry.id]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Movement Form')
+        self.assertContains(resp, '<ol class="movement-form-list">')
+        self.assertContains(resp, '<li>Position a barbell across your upper back and traps, gripping the bar firmly with hands slightly wider than shoulders.</li>')
+        self.assertContains(resp, '<li>Exhale as you lock out your hips and reset your brace for the next rep.</li>')
+
+    def test_all_94_male_exercises_image_consistency(self):
+        from workout.recommendations import get_available_exercises, MALE_LIBRARY_BODY_PARTS
+        from workout.models import Workout, WorkoutExercise
+        import re
+
+        user = User.objects.create_user('img-audit-user', password='password')
+        profile = UserProfile.objects.create(
+            user=user, profile_completed=True, gender='male',
+            goal='fitness', workout_location='gym'
+        )
+        self.client.login(username='img-audit-user', password='password')
+        male_exercises = get_available_exercises(profile).filter(body_part__in=MALE_LIBRARY_BODY_PARTS)
+        self.assertEqual(male_exercises.count(), 94)
+
+        workout = Workout.objects.create(user=user)
+
+        for ex in male_exercises:
+            # 1. Detail page image
+            resp_d = self.client.get(reverse('workout:exercise_detail', args=[ex.id]))
+            self.assertEqual(resp_d.status_code, 200)
+            m_d = re.search(r'class="detail-photo"\s+src="([^"]+)"', resp_d.content.decode())
+            self.assertTrue(bool(m_d), f"Detail photo not found for {ex.name}")
+            img_d = m_d.group(1).split('?')[0]
+
+            # 2. Workout session image
+            entry = WorkoutExercise.objects.create(
+                workout=workout, exercise=ex, sets_planned=3, reps_planned=10, rest_seconds=60, exercise_seconds=45
+            )
+            resp_w = self.client.get(reverse('workout:workout_session', args=[entry.id]))
+            self.assertEqual(resp_w.status_code, 200)
+            m_w = re.search(r'src="([^"]+)"\s+alt="Photo for [^"]*"\s+class="exercise-photo"', resp_w.content.decode())
+            self.assertTrue(bool(m_w), f"Workout photo not found for {ex.name}")
+            img_w = m_w.group(1).split('?')[0]
+
+            self.assertEqual(img_d, img_w, f"Image mismatch for {ex.name}: detail has {img_d}, workout has {img_w}")
+            self.assertIn('/static/workout/images/male/', img_d)
+
+    def test_workout_session_duplicate_category_eyebrow_fixed(self):
+        from workout.models import Workout, WorkoutExercise
+        user = User.objects.create_user('eyebrow-audit-user', password='password')
+        UserProfile.objects.create(
+            user=user, profile_completed=True, gender='male',
+            goal='fitness', workout_location='gym'
+        )
+        self.client.login(username='eyebrow-audit-user', password='password')
+
+        workout = Workout.objects.create(user=user)
+        # Overhead Press has body_part='Shoulders' and category='Shoulders'
+        overhead_press = Exercise.objects.get(name='Overhead Press')
+        entry = WorkoutExercise.objects.create(
+            workout=workout, exercise=overhead_press,
+            sets_planned=3, reps_planned=10, rest_seconds=60, exercise_seconds=45
+        )
+        resp = self.client.get(reverse('workout:workout_session', args=[entry.id]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, '<p class="eyebrow">SHOULDERS</p>')
+        self.assertNotContains(resp, 'SHOULDERS · SHOULDERS')
+
+    def test_all_94_male_exercises_have_tailored_recommended_workout(self):
+        from workout.recommendations import get_available_exercises, MALE_LIBRARY_BODY_PARTS
+        import re
+
+        user = User.objects.create_user('rec-test-user', password='password')
+        profile = UserProfile.objects.create(
+            user=user, profile_completed=True, gender='male',
+            goal='fitness', workout_location='gym'
+        )
+        self.client.login(username='rec-test-user', password='password')
+
+        male_exercises = get_available_exercises(profile).filter(body_part__in=MALE_LIBRARY_BODY_PARTS)
+        self.assertEqual(male_exercises.count(), 94)
+
+        for ex in male_exercises:
+            self.assertTrue(bool(ex.recommended_sets), f"{ex.name} missing recommended_sets")
+            self.assertTrue(bool(ex.recommended_reps or ex.recommended_duration), f"{ex.name} missing both reps and duration")
+            self.assertTrue(bool(ex.recommended_rest), f"{ex.name} missing recommended_rest")
+
+            resp = self.client.get(reverse('workout:exercise_detail', args=[ex.id]))
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'Recommended Workout')
+            self.assertContains(resp, 'wf-male')
+            cards = re.findall(r'<div class="wf-param-card">', resp.content.decode())
+            self.assertEqual(len(cards), 3, f"{ex.name} does not render exactly 3 parameter cards")
+
+
+class FoodDetailDataIntegrityTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.core.management import call_command
+        call_command('seed_diet_meals')
+
+    def test_every_diet_meal_has_complete_unique_details(self):
+        from workout.diet_details import get_meal_details
+        goals = ('bulk', 'cut', 'maintain', 'strength', 'fitness')
+        for goal in goals:
+            meals = DietMeal.objects.filter(goal=goal)
+            self.assertEqual(meals.count(), 42) # 7 days * 6 meals
+            for meal in meals:
+                detail = get_meal_details(meal)
+                self.assertIsNotNone(detail, f"Missing detail for {meal.name} ({meal.goal})")
+                self.assertTrue(bool(detail.get('description')), f"Empty description for {meal.name}")
+                self.assertIn('calories', detail)
+                self.assertTrue(bool(detail.get('why_this_meal')), f"Empty why_this_meal for {meal.name}")
+                self.assertTrue(bool(detail.get('goal_benefit')), f"Empty goal_benefit for {meal.name}")
+                self.assertTrue(bool(detail.get('nutrition_tip')), f"Empty nutrition_tip for {meal.name}")
+
+                if meal.meal_type == 'hydration':
+                    self.assertTrue(detail.get('is_hydration'))
+                    self.assertTrue(bool(detail.get('habit_text')))
+                    self.assertGreaterEqual(len(detail.get('guidance', [])), 4)
+                else:
+                    self.assertFalse(detail.get('is_hydration'))
+                    self.assertGreaterEqual(len(detail.get('ingredients', [])), 2, f"Too few ingredients for {meal.name}")
+                    self.assertGreaterEqual(len(detail.get('preparation_steps', [])), 3, f"Too few prep steps for {meal.name}")
+                    self.assertGreaterEqual(len(detail.get('substitutions', [])), 1, f"Missing substitutions for {meal.name}")
+
+    def test_goal_specific_text_changes_dynamically_with_user_goal(self):
+        from workout.diet_details import get_meal_details
+        sample_meal = DietMeal.objects.filter(name='Whole-grain toast + vegetable omelette + fruit').first()
+        if not sample_meal:
+            sample_meal = DietMeal.objects.exclude(meal_type='hydration').first()
+
+        benefits = {}
+        for goal_code in ('bulk', 'cut', 'maintain', 'strength', 'fitness'):
+            mock_profile = type('Profile', (), {'goal': goal_code})()
+            det = get_meal_details(sample_meal, mock_profile)
+            benefits[goal_code] = det['goal_benefit']
+
+        # Ensure benefits are populated
+        for goal_code, text in benefits.items():
+            self.assertTrue(bool(text), f"Empty benefit for {goal_code}")
+
+        # Check keyword alignments
+        self.assertIn('muscle', benefits['bulk'].lower())
+        self.assertTrue('cut' in benefits['cut'].lower() or 'fullness' in benefits['cut'].lower() or 'fat' in benefits['cut'].lower() or 'satiety' in benefits['cut'].lower())
+        self.assertTrue('maintain' in benefits['maintain'].lower() or 'balanced' in benefits['maintain'].lower() or 'everyday' in benefits['maintain'].lower())
+        self.assertTrue('strength' in benefits['strength'].lower() or 'performance' in benefits['strength'].lower() or 'power' in benefits['strength'].lower() or 'recovery' in benefits['strength'].lower())
+        self.assertTrue('fitness' in benefits['fitness'].lower() or 'vitality' in benefits['fitness'].lower() or 'endurance' in benefits['fitness'].lower() or 'everyday' in benefits['fitness'].lower())
+
+
+class DietPageFoodDetailViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.core.management import call_command
+        call_command('seed_diet_meals')
+
+    def test_diet_page_contains_modal_markup_and_interactive_cards(self):
+        user = User.objects.create_user('diet-modal-user', password='password')
+        UserProfile.objects.create(
+            user=user, profile_completed=True, goal='fitness', gender='female'
+        )
+        self.client.login(username='diet-modal-user', password='password')
+
+        resp = self.client.get(reverse('workout:diet'))
+        self.assertEqual(resp.status_code, 200)
+
+        # Main food cards are interactive
+        self.assertContains(resp, 'meal-card-interactive')
+        self.assertContains(resp, 'role="button"')
+        self.assertContains(resp, 'aria-haspopup="dialog"')
+        self.assertContains(resp, 'View details &amp; recipe')
+
+        # Modal overlay structure
+        self.assertContains(resp, 'id="food-detail-overlay"')
+        self.assertContains(resp, 'id="modal-backdrop"')
+        self.assertContains(resp, 'id="modal-close-x"')
+        self.assertContains(resp, 'id="modal-standard-view"')
+        self.assertContains(resp, 'id="modal-hydration-view"')
+
+        # Specific section titles
+        self.assertContains(resp, 'INGREDIENTS')
+        self.assertContains(resp, 'HOW TO PREPARE')
+        self.assertContains(resp, 'WHY THIS MEAL?')
+        self.assertContains(resp, 'GOOD FOR YOUR GOAL')
+        self.assertContains(resp, 'POSSIBLE SUBSTITUTIONS')
+        self.assertContains(resp, 'NUTRITION TIP')
+
+        # Nutrition values approximate disclaimer
+        self.assertContains(resp, 'Nutrition values are approximate')
+
+        # Macro cards
+        self.assertContains(resp, 'modal-macro-calories')
+        self.assertContains(resp, 'modal-macro-protein')
+        self.assertContains(resp, 'modal-macro-carbs')
+        self.assertContains(resp, 'modal-macro-fat')
+        self.assertContains(resp, 'modal-macro-fiber')
+
+        # Hydration view components
+        self.assertContains(resp, 'Daily Hydration &amp; Fluid Balance')
+        self.assertContains(resp, 'Keep water nearby and drink regularly throughout the day.')
+        self.assertContains(resp, 'RECOMMENDED HABIT')
+
+    def test_diet_page_across_all_five_goals(self):
+        goals = ('bulk', 'cut', 'maintain', 'strength', 'fitness')
+        for goal in goals:
+            user = User.objects.create_user(f'diet-user-{goal}', password='password')
+            UserProfile.objects.create(
+                user=user, profile_completed=True, goal=goal, gender='male'
+            )
+            self.client.login(username=f'diet-user-{goal}', password='password')
+
+            resp = self.client.get(reverse('workout:diet'))
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'food-modal-overlay')
+            # Exactly 6 meal payloads per day
+            self.assertEqual(resp.content.decode().count('meal-json-payload'), 6)
+
+
+class ProgressAnalyticsRedesignTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user('analytics-user', password='password')
+        self.profile = UserProfile.objects.create(
+            user=self.user, profile_completed=True, workout_location='gym',
+            current_streak=3, longest_streak=7
+        )
+        self.client.login(username='analytics-user', password='password')
+
+        self.ex_bench = Exercise.objects.create(
+            name='Barbell Bench Press', body_part='Chest', equipment_type='barbell',
+            category='Chest', description='Chest press', instructions='Press', muscles_targeted='Chest, Triceps'
+        )
+        self.ex_squat = Exercise.objects.create(
+            name='Barbell Squat', body_part='Legs', equipment_type='barbell',
+            category='Legs', description='Squat', instructions='Squat down', muscles_targeted='Quadriceps, Glutes'
+        )
+        self.ex_row = Exercise.objects.create(
+            name='Dumbbell Row', body_part='Back', equipment_type='dumbbell',
+            category='Back', description='Row', instructions='Pull', muscles_targeted='Back, Biceps'
+        )
+
+        from django.utils import timezone
+        self.create_workout_session(self.user, timezone.localdate(), [
+            (self.ex_bench, [(10, 60, True), (10, 60, True)]),
+        ])
+
+    def create_workout_session(self, user, workout_date, exercises_data, completed=True):
+        from django.utils import timezone
+        import datetime
+        dt = timezone.make_aware(datetime.datetime.combine(workout_date, datetime.time(10, 0)))
+        w = Workout.objects.create(
+            user=user, date=workout_date, completed=completed,
+            created_at=dt, completed_at=dt + datetime.timedelta(minutes=45) if completed else None
+        )
+        for order, (exercise, sets_info) in enumerate(exercises_data, 1):
+            entry = WorkoutExercise.objects.create(
+                workout=w, exercise=exercise, sets_planned=len(sets_info),
+                reps_planned=10, weight=sets_info[0][1] if sets_info else 50, order=order
+            )
+            for set_num, (reps, weight, set_comp) in enumerate(sets_info, 1):
+                WorkoutSet.objects.create(
+                    workout_exercise=entry, set_number=set_num, reps_completed=reps,
+                    weight=weight, completed=set_comp
+                )
+        return w
+
+    def test_progress_view_authenticated_and_structure(self):
+        resp = self.client.get(reverse('workout:progress'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'workout/progress.html')
+        self.assertContains(resp, 'Your training, clearly tracked')
+        self.assertContains(resp, 'A simple view of your completed workouts, consistency, and training volume.')
+        self.assertContains(resp, 'TOTAL WORKOUTS')
+        self.assertContains(resp, 'CURRENT STREAK')
+        self.assertContains(resp, 'WORKOUT TIME')
+        self.assertContains(resp, 'TOTAL SETS')
+        self.assertContains(resp, 'TOTAL REPS')
+        self.assertContains(resp, 'TOTAL VOLUME')
+        self.assertContains(resp, '12-month workout activity')
+        self.assertContains(resp, 'Workout Frequency')
+        self.assertContains(resp, 'Training Volume')
+        self.assertContains(resp, 'What your activity shows')
+        self.assertContains(resp, 'Achievements')
+        self.assertContains(resp, 'Completed workouts')
+        self.assertContains(resp, 'heatmap-modal-backdrop')
+
+    def test_analytics_kpi_and_day_details_with_real_data(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        today = timezone.localdate()
+
+        user2 = User.objects.create_user('kpi-user', password='password')
+        UserProfile.objects.create(user=user2, profile_completed=True, workout_location='gym')
+        self.client.login(username='kpi-user', password='password')
+
+        # Workout today: 3 sets Bench + 2 sets Squat
+        # Volume = 3 * 10 * 60 + 2 * 10 * 80 = 1800 + 1600 = 3400 kg
+        self.create_workout_session(user2, today, [
+            (self.ex_bench, [(10, 60, True), (10, 60, True), (10, 60, True)]),
+            (self.ex_squat, [(10, 80, True), (10, 80, True)]),
+        ])
+
+        # Workout 2 days ago: 2 sets Row
+        # Volume = 2 * 12 * 25 = 600 kg
+        self.create_workout_session(user2, today - timedelta(days=2), [
+            (self.ex_row, [(12, 25, True), (12, 25, True)]),
+        ])
+
+        resp = self.client.get(reverse('workout:progress') + '?range=30d')
+        self.assertEqual(resp.status_code, 200)
+
+        summary = resp.context['summary']
+        self.assertEqual(summary['workouts'], 2)
+        self.assertEqual(summary['sets'], 7)
+        self.assertEqual(summary['reps'], 74)  # 3*10 + 2*10 + 2*12 = 74 reps
+        self.assertEqual(summary['volume'], '4,000')  # 3400 + 600 = 4000 kg
+
+        # Check chart data dayDetails contains rich workout data
+        chart_data = resp.context['chart_data']
+        today_iso = today.isoformat()
+        self.assertIn(today_iso, chart_data['dayDetails'])
+        day_info = chart_data['dayDetails'][today_iso]
+        self.assertEqual(day_info['workout_count'], 1)
+        self.assertEqual(day_info['total_sets'], 5)
+        self.assertEqual(day_info['total_volume'], '3,400')
+
+    def test_milestones_and_streak_progress(self):
+        resp = self.client.get(reverse('workout:progress'))
+        milestones = resp.context['milestones']
+        self.assertEqual(len(milestones), 6)
+        first_workout_m = milestones[0]
+        self.assertEqual(first_workout_m, (1, 'First Workout'))
+
+    def test_empty_state_for_brand_new_user(self):
+        new_user = User.objects.create_user('empty-analytics-user', password='password')
+        UserProfile.objects.create(user=new_user, profile_completed=True)
+        self.client.login(username='empty-analytics-user', password='password')
+
+        resp = self.client.get(reverse('workout:progress'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Your progress will appear here')
+        self.assertContains(resp, 'Start Workout')
+
+    def test_workout_day_detail_shows_all_workouts_for_date(self):
+        from decimal import Decimal
+        from django.utils import timezone
+        today = timezone.localdate()
+        user3 = User.objects.create_user('multi-workout-user', password='password')
+        UserProfile.objects.create(user=user3, profile_completed=True)
+        self.client.login(username='multi-workout-user', password='password')
+
+        # Create Workout 1 on today
+        self.create_workout_session(user3, today, [
+            (self.ex_bench, [(10, 60, True), (10, 60, True)]),
+        ])
+        # Create Workout 2 on today
+        self.create_workout_session(user3, today, [
+            (self.ex_squat, [(10, 80, True)]),
+        ])
+
+        today_iso = today.isoformat()
+        resp = self.client.get(reverse('workout:workout_day_detail', args=[today_iso]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'workout/workout_day_detail.html')
+        self.assertEqual(resp.context['workout_count'], 2)
+        self.assertEqual(resp.context['completed_sets'], 3)
+        self.assertEqual(resp.context['total_reps'], 30)
+        self.assertEqual(resp.context['total_volume'], Decimal('2000'))
+        self.assertContains(resp, '2 Completed Workouts')
+        self.assertContains(resp, 'Session Breakdown')
+
+    def test_charts_bucket_aggregation(self):
+        resp_7d = self.client.get(reverse('workout:progress') + '?range=7d')
+        self.assertEqual(len(resp_7d.context['chart_data']['frequency']), 7)
+
+        resp_30d = self.client.get(reverse('workout:progress') + '?range=30d')
+        self.assertEqual(len(resp_30d.context['chart_data']['frequency']), 30)
+
+        resp_3m = self.client.get(reverse('workout:progress') + '?range=3m')
+        self.assertEqual(len(resp_3m.context['chart_data']['frequency']), 13)
+
+        resp_6m = self.client.get(reverse('workout:progress') + '?range=6m')
+        self.assertEqual(len(resp_6m.context['chart_data']['frequency']), 6)
+
+        resp_1y = self.client.get(reverse('workout:progress') + '?range=1y')
+        self.assertEqual(len(resp_1y.context['chart_data']['frequency']), 12)
+
+
+
+
+
+
+

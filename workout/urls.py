@@ -20,6 +20,7 @@ urlpatterns = [
     path('history/<int:workout_id>/delete/', views.delete_workout, name='delete_workout'),
     path('history/<int:workout_id>/', views.workout_history_detail, name='workout_history_detail'),
     path('history/', views.history, name='history'),
+    path('progress/day/<str:date_str>/', views.workout_day_detail, name='workout_day_detail'),
     path('progress/', views.progress, name='progress'),
     path('exercise-library/', views.exercise_library, name='exercise_library'),
     path('exercise-library/<int:exercise_id>/', views.exercise_detail, name='exercise_detail'),

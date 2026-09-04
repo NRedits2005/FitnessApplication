@@ -9,23 +9,42 @@
   <p class="subtitle">Tailored nutrition ideas aligned with your <strong>{{ profile.get_goal_display }}</strong> fitness goals.</p>
 
   <div class="diet-day-controls">
+    {% if has_previous %}
     <a class="button secondary-button" href="?offset={{ offset|add:'-1' }}">← Previous Day</a>
+    {% endif %}
     <a class="button {% if offset == 0 %}primary-cta{% else %}secondary-button{% endif %}" href="{% url 'workout:diet' %}">Today</a>
     <a class="button secondary-button" href="?offset={{ offset|add:'1' }}">Next Day →</a>
   </div>
 </section>
 
-<section class="diet-grid diet-grid-full">
+<section class="diet-grid diet-grid-full" id="diet-grid-section">
   {% for meal in meals %}
-  <article class="meal-card card">
+  <article class="meal-card card meal-card-interactive" 
+           tabindex="0" 
+           role="button" 
+           aria-haspopup="dialog" 
+           aria-label="View details for {{ meal.name }}"
+           data-meal-id="{{ meal.id }}">
     <div class="meal-image-wrap">
-      <img src="{{ meal.image }}" alt="{{ meal.name }}" onerror="this.onerror=null;this.src='{% url 'workout:diet_meal_fallback' meal.id %}';">
+      <img src="{{ meal.image }}" alt="{{ meal.name }}" loading="lazy" onerror="this.onerror=null;this.src='{% url 'workout:diet_meal_fallback' meal.id %}';">
       <span class="meal-type-badge meal-type-{{ meal.meal_type }}">{{ meal.get_meal_type_display }}</span>
     </div>
     <div class="meal-copy">
       <h2>{{ meal.name }}</h2>
       <p class="meal-desc">{{ meal.description }}</p>
+      <div class="meal-card-cta">
+        <span class="cta-link-text">View details &amp; recipe</span>
+        <svg class="cta-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
     </div>
+
+    {# Embedded data payload for instant, responsive modal rendering #}
+    <script type="application/json" class="meal-json-payload" id="meal-payload-{{ meal.id }}">
+      {{ meal.detail_json|safe }}
+    </script>
   </article>
   {% empty %}
   <div class="empty-state card full-grid-width">
@@ -39,4 +58,427 @@
   <div class="tip-icon">🥗</div>
   <p class="diet-note">These meal suggestions are general wellness guidance created to complement your training routine. Individual nutrition requirements vary based on personal health and daily activity levels.</p>
 </div>
+
+<!-- ========================================================
+     FOOD DETAIL MODAL OVERLAY (Fitness+ Nutrition Detail)
+     ======================================================== -->
+<div id="food-detail-overlay" class="food-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-food-title">
+  <div class="food-modal-backdrop" id="modal-backdrop"></div>
+  <div class="food-modal-container" role="document" id="modal-container">
+    
+    <!-- Top-Right Close Button -->
+    <button type="button" class="food-modal-close-btn" id="modal-close-x" aria-label="Close food detail modal">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="food-modal-scrollable">
+      
+      <!-- ==========================================
+           STANDARD FOOD DETAIL VIEW
+           ========================================== -->
+      <div id="modal-standard-view" class="modal-view-panel">
+        
+        <!-- TOP SECTION: Food Image (Left) + Header Copy & Nutrition Cards (Right) -->
+        <div class="food-modal-top">
+          <div class="food-modal-image-col">
+            <div class="food-modal-img-wrapper">
+              <img id="modal-food-img" src="" alt="Food image" class="food-modal-main-img">
+            </div>
+          </div>
+
+          <div class="food-modal-intro-col">
+            <span id="modal-meal-badge" class="food-modal-meal-badge">BREAKFAST</span>
+            <h2 id="modal-food-title" class="food-modal-title">Food Title</h2>
+            <p id="modal-food-desc" class="food-modal-description">Short description</p>
+
+            <!-- Nutrition Cards Responsive Grid -->
+            <div class="food-nutrition-grid">
+              <div class="macro-card">
+                <span class="macro-val" id="modal-macro-calories">450 <small>kcal</small></span>
+                <span class="macro-lbl">Calories</span>
+              </div>
+              <div class="macro-card">
+                <span class="macro-val" id="modal-macro-protein">22 <small>g</small></span>
+                <span class="macro-lbl">Protein</span>
+              </div>
+              <div class="macro-card">
+                <span class="macro-val" id="modal-macro-carbs">50 <small>g</small></span>
+                <span class="macro-lbl">Carbs</span>
+              </div>
+              <div class="macro-card">
+                <span class="macro-val" id="modal-macro-fat">18 <small>g</small></span>
+                <span class="macro-lbl">Fat</span>
+              </div>
+              <div class="macro-card">
+                <span class="macro-val" id="modal-macro-fiber">7 <small>g</small></span>
+                <span class="macro-lbl">Fiber</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-modal-divider"></div>
+
+        <!-- MIDDLE SECTION: Ingredients (Left) + How to Prepare (Right) -->
+        <div class="food-modal-recipe-grid">
+          <div class="recipe-column">
+            <h3 class="recipe-section-title">
+              <span class="section-icon">🥗</span> INGREDIENTS
+            </h3>
+            <ul id="modal-ingredients-list" class="food-ingredients-list">
+              <!-- Populated dynamically -->
+            </ul>
+          </div>
+
+          <div class="recipe-column">
+            <h3 class="recipe-section-title">
+              <span class="section-icon">🍳</span> HOW TO PREPARE
+            </h3>
+            <ol id="modal-prepare-list" class="food-prepare-list">
+              <!-- Populated dynamically -->
+            </ol>
+          </div>
+        </div>
+
+        <div class="food-modal-divider"></div>
+
+        <!-- WHY THIS MEAL? SECTION -->
+        <div class="food-modal-section">
+          <h3 class="recipe-section-title">
+            <span class="section-icon">🌿</span> WHY THIS MEAL?
+          </h3>
+          <p id="modal-why-meal" class="food-modal-why-text"></p>
+
+          <!-- 🎯 GOOD FOR YOUR GOAL BOX -->
+          <div class="goal-benefit-box">
+            <div class="goal-box-header">
+              <span class="goal-box-icon">🎯</span>
+              <h4>GOOD FOR YOUR GOAL: <span id="modal-goal-badge" class="goal-highlight-text">{{ profile.get_goal_display }}</span></h4>
+            </div>
+            <p id="modal-goal-benefit-text" class="goal-box-desc"></p>
+          </div>
+        </div>
+
+        <div class="food-modal-divider"></div>
+
+        <!-- POSSIBLE SUBSTITUTIONS & NUTRITION TIP -->
+        <div class="food-modal-section">
+          <h3 class="recipe-section-title">
+            <span class="section-icon">🔄</span> POSSIBLE SUBSTITUTIONS
+          </h3>
+          <div id="modal-substitutions-container" class="substitutions-grid">
+            <!-- Populated dynamically (Original → Alternative) -->
+          </div>
+
+          <!-- 💡 NUTRITION TIP -->
+          <div class="nutrition-tip-box">
+            <div class="tip-box-header">
+              <span class="tip-box-icon">💡</span>
+              <h4>NUTRITION TIP</h4>
+            </div>
+            <p id="modal-nutrition-tip-text" class="tip-box-desc"></p>
+          </div>
+
+          <p class="nutrition-disclaimer-note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            Nutrition values are approximate and may vary based on portion sizes and specific preparation methods.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- ==========================================
+           HYDRATION CARD VIEW
+           ========================================== -->
+      <div id="modal-hydration-view" class="modal-view-panel" style="display: none;">
+        <div class="hydration-modal-header">
+          <div class="hydration-banner-badge">
+            <span class="hydration-water-icon">💧</span>
+            <span class="food-modal-meal-badge badge-hydration">HYDRATION</span>
+          </div>
+          <h2 class="food-modal-title">Daily Hydration &amp; Fluid Balance</h2>
+          <p class="food-modal-description">Proper hydration maintains optimal cellular function, joint lubrication, cognitive clarity, and physical endurance during exercise.</p>
+        </div>
+
+        <!-- Recommended Habit Box -->
+        <div class="hydration-habit-card">
+          <div class="habit-badge-pill">RECOMMENDED HABIT</div>
+          <p class="habit-main-text">Keep water nearby and drink regularly throughout the day.</p>
+        </div>
+
+        <!-- 4 Guidance Cards -->
+        <div class="hydration-cards-grid">
+          <div class="hydration-guide-card">
+            <div class="guide-card-icon">💧</div>
+            <h4>Daily Target</h4>
+            <p>Aim for 2.5 to 3.5 liters of clean water daily, increasing with high sweat rates or warm climates.</p>
+          </div>
+          <div class="hydration-guide-card">
+            <div class="guide-card-icon">⚡</div>
+            <h4>Electrolyte Balance</h4>
+            <p>Add fresh lemon, tender coconut water, or a tiny pinch of rock salt during prolonged training sessions.</p>
+          </div>
+          <div class="hydration-guide-card">
+            <div class="guide-card-icon">🏋️</div>
+            <h4>Pre &amp; Post Workout</h4>
+            <p>Drink 250–350 ml of water 30 minutes before exercise and replenish fluid losses steadily afterwards.</p>
+          </div>
+          <div class="hydration-guide-card">
+            <div class="guide-card-icon">⏰</div>
+            <h4>Hydration Timing</h4>
+            <p>Sip water consistently throughout the day rather than chugging large volumes all at once.</p>
+          </div>
+        </div>
+
+        <!-- Goal Box for Hydration -->
+        <div class="goal-benefit-box">
+          <div class="goal-box-header">
+            <span class="goal-box-icon">🎯</span>
+            <h4>GOOD FOR YOUR GOAL: <span class="goal-highlight-text">{{ profile.get_goal_display }}</span></h4>
+          </div>
+          <p id="hydration-goal-text" class="goal-box-desc">
+            Adequate hydration supports muscle protein delivery, prevents premature fatigue, and maximizes metabolic performance for your fitness goal.
+          </p>
+        </div>
+
+        <!-- Hydration Tip -->
+        <div class="nutrition-tip-box">
+          <div class="tip-box-header">
+            <span class="tip-box-icon">💡</span>
+            <h4>NUTRITION TIP</h4>
+          </div>
+          <p class="tip-box-desc">Start your morning with a large glass of warm water before breakfast to rehydrate after sleep and kickstart digestive motility.</p>
+        </div>
+      </div>
+
+      <!-- Bottom Close Button -->
+      <div class="food-modal-footer">
+        <button type="button" class="button secondary-button modal-footer-btn" id="modal-close-bottom">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+  'use strict';
+
+  const overlay = document.getElementById('food-detail-overlay');
+  const container = document.getElementById('modal-container');
+  const backdrop = document.getElementById('modal-backdrop');
+  const closeBtnX = document.getElementById('modal-close-x');
+  const closeBtnBottom = document.getElementById('modal-close-bottom');
+
+  const standardView = document.getElementById('modal-standard-view');
+  const hydrationView = document.getElementById('modal-hydration-view');
+
+  const modalImg = document.getElementById('modal-food-img');
+  const modalBadge = document.getElementById('modal-meal-badge');
+  const modalTitle = document.getElementById('modal-food-title');
+  const modalDesc = document.getElementById('modal-food-desc');
+
+  const macroCalories = document.getElementById('modal-macro-calories');
+  const macroProtein = document.getElementById('modal-macro-protein');
+  const macroCarbs = document.getElementById('modal-macro-carbs');
+  const macroFat = document.getElementById('modal-macro-fat');
+  const macroFiber = document.getElementById('modal-macro-fiber');
+
+  const ingredientsList = document.getElementById('modal-ingredients-list');
+  const prepareList = document.getElementById('modal-prepare-list');
+  const whyMealText = document.getElementById('modal-why-meal');
+  const goalBadge = document.getElementById('modal-goal-badge');
+  const goalBenefitText = document.getElementById('modal-goal-benefit-text');
+  const substitutionsContainer = document.getElementById('modal-substitutions-container');
+  const nutritionTipText = document.getElementById('modal-nutrition-tip-text');
+
+  let lastActiveElement = null;
+
+  function openModal(data) {
+    if (!data) return;
+
+    const isHydration = data.is_hydration || data.meal_type === 'hydration' || (data.name && data.name.toLowerCase().includes('water'));
+
+    if (isHydration) {
+      standardView.style.display = 'none';
+      hydrationView.style.display = 'block';
+      const hydGoalText = document.getElementById('hydration-goal-text');
+      if (hydGoalText && data.goal_benefit) {
+        hydGoalText.textContent = data.goal_benefit;
+      }
+    } else {
+      hydrationView.style.display = 'none';
+      standardView.style.display = 'block';
+
+      // Set Top Section Image & Meta
+      if (modalImg) {
+        modalImg.src = data.image || '';
+        modalImg.alt = data.name || 'Food image';
+        modalImg.onerror = function() {
+          this.onerror = null;
+          if (data.id) {
+            this.src = '/diet/meal/' + data.id + '/fallback.svg';
+          }
+        };
+      }
+
+      if (modalBadge) {
+        const typeLabel = (data.meal_type_display || data.meal_type || 'MEAL').toUpperCase();
+        modalBadge.textContent = typeLabel;
+        modalBadge.className = 'food-modal-meal-badge badge-' + (data.meal_type || 'breakfast');
+      }
+
+      if (modalTitle) modalTitle.textContent = data.name || '';
+      if (modalDesc) modalDesc.textContent = data.description || '';
+
+      // Nutrition values
+      if (macroCalories) macroCalories.innerHTML = (data.calories !== undefined ? data.calories : '450') + ' <small>kcal</small>';
+      if (macroProtein) macroProtein.innerHTML = (data.protein || '22 g').replace('g', ' <small>g</small>');
+      if (macroCarbs) macroCarbs.innerHTML = (data.carbs || '50 g').replace('g', ' <small>g</small>');
+      if (macroFat) macroFat.innerHTML = (data.fat || '14 g').replace('g', ' <small>g</small>');
+      if (macroFiber) macroFiber.innerHTML = (data.fiber || '7 g').replace('g', ' <small>g</small>');
+
+      // Ingredients List (clean bullet points)
+      if (ingredientsList) {
+        ingredientsList.innerHTML = '';
+        const ingredients = data.ingredients || [];
+        ingredients.forEach(function(ing) {
+          const li = document.createElement('li');
+          li.textContent = ing;
+          ingredientsList.appendChild(li);
+        });
+      }
+
+      // Preparation Steps (numbered 1, 2, 3, 4)
+      if (prepareList) {
+        prepareList.innerHTML = '';
+        const steps = data.preparation_steps || [];
+        steps.forEach(function(step) {
+          const li = document.createElement('li');
+          li.textContent = step;
+          prepareList.appendChild(li);
+        });
+      }
+
+      // Why This Meal?
+      if (whyMealText) {
+        whyMealText.textContent = data.why_this_meal || '';
+      }
+
+      // 🎯 GOOD FOR YOUR GOAL
+      if (goalBadge && data.user_goal_display) {
+        goalBadge.textContent = data.user_goal_display;
+      }
+      if (goalBenefitText) {
+        goalBenefitText.textContent = data.goal_benefit || '';
+      }
+
+      // Possible Substitutions
+      if (substitutionsContainer) {
+        substitutionsContainer.innerHTML = '';
+        const subs = data.substitutions || [];
+        subs.forEach(function(sub) {
+          const row = document.createElement('div');
+          row.className = 'sub-row';
+
+          const orig = document.createElement('span');
+          orig.className = 'sub-orig';
+          orig.textContent = sub.original || '';
+
+          const arrow = document.createElement('span');
+          arrow.className = 'sub-arrow';
+          arrow.innerHTML = '→';
+
+          const alt = document.createElement('span');
+          alt.className = 'sub-alt';
+          alt.textContent = sub.alternative || '';
+
+          row.appendChild(orig);
+          row.appendChild(arrow);
+          row.appendChild(alt);
+          substitutionsContainer.appendChild(row);
+        });
+      }
+
+      // 💡 NUTRITION TIP
+      if (nutritionTipText) {
+        nutritionTipText.textContent = data.nutrition_tip || '';
+      }
+    }
+
+    // Display overlay with animation
+    overlay.classList.add('is-active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+
+    // Reset internal scroll to top
+    const scrollable = overlay.querySelector('.food-modal-scrollable');
+    if (scrollable) scrollable.scrollTop = 0;
+
+    // Focus close button for accessibility
+    setTimeout(function() {
+      if (closeBtnX) closeBtnX.focus();
+    }, 50);
+  }
+
+  function closeModal() {
+    overlay.classList.remove('is-active');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+
+    if (lastActiveElement && typeof lastActiveElement.focus === 'function') {
+      lastActiveElement.focus();
+    }
+  }
+
+  // Bind interactive meal cards
+  const cards = document.querySelectorAll('.meal-card-interactive');
+  cards.forEach(function(card) {
+    function handleCardActivation(e) {
+      // Don't trigger if clicked on an actual link/button
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+      
+      const mealId = card.getAttribute('data-meal-id');
+      const payloadElem = document.getElementById('meal-payload-' + mealId);
+      if (payloadElem) {
+        try {
+          const data = JSON.parse(payloadElem.textContent);
+          lastActiveElement = card;
+          openModal(data);
+        } catch (err) {
+          console.error('Failed to parse meal detail payload:', err);
+        }
+      }
+    }
+
+    card.addEventListener('click', handleCardActivation);
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleCardActivation(e);
+      }
+    });
+  });
+
+  // Modal Close event listeners
+  if (closeBtnX) closeBtnX.addEventListener('click', closeModal);
+  if (closeBtnBottom) closeBtnBottom.addEventListener('click', closeModal);
+  if (backdrop) backdrop.addEventListener('click', closeModal);
+
+  // Global ESC key listener & focus trapping
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('is-active')) {
+      closeModal();
+    }
+  });
+
+})();
+</script>
 {% endblock %}

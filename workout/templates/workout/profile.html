@@ -75,6 +75,7 @@
             {% if profile.bmi_category %}
               <span class="badge badge-primary">{{ profile.bmi_category }}</span>
             {% endif %}
+
           </strong>
         </div>
       </div>
@@ -106,11 +107,15 @@
       </div>
       <p class="section-hint">The Exercise Library and customized workouts will automatically adapt to these items.</p>
       <div class="equipment-pill-list">
-        {% for item in profile.equipment_display_list %}
-          <span class="equipment-tag">{{ item }}</span>
-        {% empty %}
-          <span class="equipment-tag">Bodyweight Only (No equipment)</span>
-        {% endfor %}
+        {% if profile.workout_location == 'gym' or profile.workout_location == 'Gym' %}
+          <span class="equipment-tag">All equipment</span>
+        {% else %}
+          {% for item in profile.equipment_display_list %}
+            <span class="equipment-tag">{{ item }}</span>
+          {% empty %}
+            <span class="equipment-tag">No equipment (Bodyweight)</span>
+          {% endfor %}
+        {% endif %}
       </div>
     </div>
   </div>

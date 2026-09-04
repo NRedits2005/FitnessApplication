@@ -12,7 +12,7 @@
     <img class="detail-photo" src="{{ exercise.image }}" alt="Exercise visual for {{ exercise.name }}" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' exercise.id %}';">
     <div class="media-badges">
       <span class="badge badge-primary">{{ exercise.category }}</span>
-      <span class="badge badge-secondary">{{ exercise.body_part }}</span>
+      {% if exercise.body_part and exercise.body_part != exercise.category %}<span class="badge badge-secondary">{{ exercise.body_part }}</span>{% endif %}
       {% if exercise.difficulty %}<span class="badge wf-detail-badge-{{ exercise.difficulty }}">{{ exercise.get_difficulty_display }}</span>{% endif %}
     </div>
   </div>
@@ -49,7 +49,7 @@
 
     {# ── Recommended Workout Parameters ── #}
     {% if exercise.recommended_sets or exercise.recommended_reps or exercise.recommended_duration or exercise.recommended_rest %}
-    <div class="wf-recommended-params">
+    <div class="wf-recommended-params {% if profile.gender == 'female' %}wf-female{% else %}wf-male{% endif %}">
       <h3>Recommended Workout</h3>
       <div class="wf-params-grid">
         {% if exercise.recommended_sets %}
@@ -65,8 +65,7 @@
           <span class="wf-param-label">Reps</span>
           <strong class="wf-param-value">{{ exercise.recommended_reps }}</strong>
         </div>
-        {% endif %}
-        {% if exercise.recommended_duration %}
+        {% elif exercise.recommended_duration %}
         <div class="wf-param-card">
           <span class="wf-param-icon">⏱️</span>
           <span class="wf-param-label">Duration</span>
@@ -97,7 +96,15 @@
     <div class="detail-section-block">
       <h3>How to Perform</h3>
       <div class="instructions-box">
-        {{ exercise.instructions|linebreaksbr }}
+        {% if exercise.instruction_steps %}
+          <ol class="movement-form-list">
+            {% for step in exercise.instruction_steps %}
+              <li>{{ step }}</li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          {{ exercise.instructions|linebreaksbr }}
+        {% endif %}
       </div>
     </div>
 

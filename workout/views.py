@@ -1,5 +1,5 @@
 from decimal import Decimal
-from datetime import timedelta
+from datetime import date, timedelta
 from django.db.models import Count, DateField, DecimalField, ExpressionWrapper, F, Max, Sum
 from django.db.models.functions import Coalesce, Lower, TruncDate
 from django.http import Http404, HttpResponse, JsonResponse
@@ -13,7 +13,12 @@ from django.utils.html import escape
 from .forms import ProfileForm, RegisterForm, StartWorkoutForm
 from .models import DietMeal, Exercise, UserProfile, Workout, WorkoutExercise, WorkoutSet
 from .recommendations import daily_workout, diet_for, diet_meals, get_available_exercises, get_recommended_exercises, get_womens_category_queryset, get_womens_exercises, get_workout_select_exercises, search_exercises, MALE_LIBRARY_BODY_PARTS, WOMENS_CATEGORIES
-from .analytics import RANGES, build_progress_data, get_range, progress_insights
+from .analytics import (
+    RANGES, build_heatmap_day_details, build_progress_data,
+    calculate_period_comparisons, calculate_workout_volume,
+    duration_label, format_weight_display, get_range, get_workout_focus,
+    progress_insights
+)
 from .image_utils import attach_exercise_images, get_exercise_image_path
 
 
@@ -116,12 +121,51 @@ def profile_edit(request):
 @login_required
 def diet(request):
     profile = get_object_or_404(UserProfile, user=request.user)
-    try:
-        offset = int(request.GET.get('offset', 0))
-    except (TypeError, ValueError):
-        offset = 0
-    offset = max(-30, min(30, offset)); date = timezone.localdate() + timedelta(days=offset)
-    return render(request, 'workout/diet.html', {'profile': profile, 'date': date, 'meals': diet_meals(profile, date), 'offset': offset})
+    today = timezone.localdate()
+    today_weekday = today.weekday()
+
+    start_date = timezone.localdate(profile.created_at) if profile.created_at else getattr(request.user, 'date_joined', None)
+    if start_date:
+        start_date = timezone.localdate(start_date) if hasattr(start_date, 'tzinfo') and start_date.tzinfo else (start_date.date() if hasattr(start_date, 'date') else start_date)
+    else:
+        start_date = today
+    if start_date > today:
+        start_date = today
+
+    min_offset = (start_date - today).days
+
+    if 'day' in request.GET:
+        try:
+            day_num = int(request.GET.get('day', 1))
+        except (TypeError, ValueError):
+            day_num = today_weekday + 1
+        day_num = ((day_num - 1) % 7) + 1
+        offset = ((day_num - 1) - today_weekday) % 7
+    else:
+        try:
+            offset = int(request.GET.get('offset', 0))
+        except (TypeError, ValueError):
+            offset = 0
+
+    # Prevent navigating before user's actual first available diet day
+    offset = max(min_offset, offset)
+
+    date = today + timedelta(days=offset)
+    day_index = date.weekday()
+    day_number = day_index + 1
+
+    has_previous = date > start_date
+    has_next = True
+
+    return render(request, 'workout/diet.html', {
+        'profile': profile,
+        'date': date,
+        'day_number': day_number,
+        'meals': diet_meals(profile, date),
+        'offset': offset,
+        'has_previous': has_previous,
+        'has_next': has_next,
+    })
 
 
 def diet_meal_fallback(request, meal_id):
@@ -156,7 +200,7 @@ def start_workout(request):
             initial['exercise'] = recommendation_id
         form = StartWorkoutForm(profile=profile, initial=initial)
     return render(request, 'workout/start_workout.html', {
-        'form': form, 'exercises': form.fields['exercise'].queryset,
+        'form': form, 'exercises': attach_exercise_images(list(form.fields['exercise'].queryset), profile.gender),
         'recommendation': get_recommended_exercises(profile, limit=1)[0] if get_recommended_exercises(profile, limit=1) else None,
     })
 
@@ -167,6 +211,9 @@ def workout_session(request, entry_id):
     if entry.workout.completed:
         return redirect('workout:workout_complete', workout_id=entry.workout_id)
     last_set = entry.sets.aggregate(last=Max('set_number'))['last'] or 0
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    gender = profile.gender if profile.profile_completed else 'male'
+    entry.exercise.image = get_exercise_image_path(entry.exercise.name, entry.exercise.category, gender)
     return render(request, 'workout/workout_session.html', {'entry': entry, 'next_set': last_set + 1})
 
 
@@ -256,23 +303,26 @@ def progress(request):
 
     today = timezone.localdate()
     range_key, start_date = get_range(request.GET.get('range', '30d'), today)
-    # Prefer the actual completion date.  The date field remains a fallback
+    # Prefer the actual completion date. The date field remains a fallback
     # for workouts saved before completed_at was introduced.
     base_workouts = Workout.objects.filter(user=request.user, completed=True).annotate(
         analytics_date=Coalesce(TruncDate('completed_at'), F('date'), output_field=DateField())
     )
     all_time_workouts = base_workouts.count()
-    if start_date:
-        base_workouts = base_workouts.filter(analytics_date__gte=start_date)
-    workouts = base_workouts.prefetch_related('workout_exercises__exercise', 'workout_exercises__sets')
-    data = build_progress_data(workouts, today)
 
-    # The heatmap always covers the last 12 months, independently of the selected summary range.
+    filtered_workouts = base_workouts
+    if start_date:
+        filtered_workouts = filtered_workouts.filter(analytics_date__gte=start_date)
+    workouts = filtered_workouts.prefetch_related('workout_exercises__exercise', 'workout_exercises__sets')
+    data = build_progress_data(workouts, today, range_key=range_key, start_date=start_date)
+
+    # The heatmap always covers the last 12 months (365 days), independently of the selected summary range.
     heatmap_start = today - timedelta(days=364)
     heatmap_workouts = Workout.objects.filter(user=request.user, completed=True).annotate(
         analytics_date=Coalesce(TruncDate('completed_at'), F('date'), output_field=DateField())
     ).filter(analytics_date__gte=heatmap_start).prefetch_related('workout_exercises__exercise', 'workout_exercises__sets')
     heatmap_activity = build_progress_data(heatmap_workouts, today)['activity']
+    heatmap_day_details = build_heatmap_day_details(heatmap_workouts, today)
 
     range_days = RANGES[range_key][1]
     previous_workouts = 0
@@ -281,18 +331,30 @@ def progress(request):
         previous_workouts = Workout.objects.filter(user=request.user, completed=True).annotate(
             analytics_date=Coalesce(TruncDate('completed_at'), F('date'), output_field=DateField())
         ).filter(analytics_date__gte=previous_start, analytics_date__lt=start_date).count()
+
     insights = progress_insights(data, profile, range_days, previous_workouts, today)
     milestones = [(1, 'First Workout'), (5, '5 Workouts'), (10, '10 Workouts'), (25, '25 Workouts'), (50, '50 Workouts'), (100, '100 Workouts')]
     streak_milestones = [(7, '7-Day Streak'), (30, '30-Day Streak')]
+
     chart_data = {
-        'frequency': data['frequency'], 'volume': data['volume'],
-        'activity': heatmap_activity, 'heatmapStart': heatmap_start.isoformat(),
+        'frequency': data['frequency'],
+        'volume': data['volume'],
+        'activity': heatmap_activity,
+        'heatmapStart': heatmap_start.isoformat(),
+        'heatmapEnd': today.isoformat(),
+        'dayDetails': heatmap_day_details,
     }
     return render(request, 'workout/progress.html', {
-        'profile': profile, 'summary': data['summary'], 'history': data['history'],
+        'profile': profile,
+        'summary': data['summary'],
+        'history': data['history'],
         'all_time_workouts': all_time_workouts,
-        'ranges': RANGES, 'selected_range': range_key, 'range_label': RANGES[range_key][0],
-        'insights': insights, 'milestones': milestones, 'streak_milestones': streak_milestones,
+        'ranges': RANGES,
+        'selected_range': range_key,
+        'range_label': RANGES[range_key][0],
+        'insights': insights,
+        'milestones': milestones,
+        'streak_milestones': streak_milestones,
         'chart_data': chart_data,
     })
 
@@ -305,6 +367,74 @@ def workout_history_detail(request, workout_id):
     completed_sets = sum(entry.sets.filter(completed=True).count() for entry in entries)
     total_reps = sum(workout_set.reps_completed for entry in entries for workout_set in entry.sets.all())
     return render(request, 'workout/workout_complete.html', {'workout': workout, 'entries': entries, 'total_volume': total_volume, 'completed_sets': completed_sets, 'total_reps': total_reps, 'history_detail': True})
+
+
+@login_required
+def workout_day_detail(request, date_str):
+    try:
+        selected_date = date.fromisoformat(date_str)
+    except (ValueError, TypeError):
+        return redirect('workout:progress')
+
+    workouts = Workout.objects.filter(user=request.user, completed=True).annotate(
+        analytics_date=Coalesce(TruncDate('completed_at'), F('date'), output_field=DateField())
+    ).filter(analytics_date=selected_date).prefetch_related('workout_exercises__exercise', 'workout_exercises__sets').order_by('completed_at', 'id')
+
+    if not workouts.exists():
+        return redirect('workout:progress')
+
+    total_volume = sum((calculate_workout_volume(w) for w in workouts), Decimal('0'))
+    total_seconds = sum((w.duration_seconds or 0 for w in workouts))
+
+    workout_sessions = []
+    total_exercises = 0
+    completed_sets = 0
+    total_reps = 0
+
+    for w in workouts:
+        entries = list(w.workout_exercises.all())
+        w_completed = [s for entry in entries for s in entry.sets.all() if s.completed]
+        w_reps = sum(s.reps_completed for s in w_completed)
+        w_volume = calculate_workout_volume(w)
+
+        total_exercises += len(entries)
+        completed_sets += len(w_completed)
+        total_reps += w_reps
+
+        time_str = ''
+        if w.completed_at:
+            local_time = timezone.localtime(w.completed_at)
+            time_str = local_time.strftime('%I:%M %p').lstrip('0')
+        elif w.created_at:
+            local_time = timezone.localtime(w.created_at)
+            time_str = local_time.strftime('%I:%M %p').lstrip('0')
+
+        focus = get_workout_focus(w)
+
+        workout_sessions.append({
+            'workout': w,
+            'time': time_str,
+            'focus': focus,
+            'duration': duration_label(w.duration_seconds or 0),
+            'volume': format_weight_display(w_volume),
+            'volume_raw': float(w_volume),
+            'entries': entries,
+            'sets_count': len(w_completed),
+            'reps_count': w_reps,
+        })
+
+    return render(request, 'workout/workout_day_detail.html', {
+        'selected_date': selected_date,
+        'workouts': workouts,
+        'workout_count': len(workout_sessions),
+        'workout_sessions': workout_sessions,
+        'total_exercises': total_exercises,
+        'completed_sets': completed_sets,
+        'total_reps': total_reps,
+        'total_volume': total_volume,
+        'total_duration': duration_label(total_seconds),
+        'total_seconds': total_seconds,
+    })
 
 
 @login_required

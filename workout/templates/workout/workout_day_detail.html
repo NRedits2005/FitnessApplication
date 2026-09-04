@@ -1,0 +1,95 @@
+{% extends 'workout/base.html' %}
+
+{% block title %}Day Summary · {{ selected_date|date:'F j, Y' }} · FITNESS+{% endblock %}
+
+{% block content %}
+<section class="complete-page-container">
+  <div class="card complete-card">
+    <div class="completion-badge-wrap">
+      <div class="completion-mark">✓</div>
+    </div>
+    
+    <p class="eyebrow">DAY SUMMARY</p>
+    <h1 class="completion-title">{{ selected_date|date:'F j, Y' }}</h1>
+    <p class="completion-subtitle">{{ workout_count }} Completed Workout{{ workout_count|pluralize }} on this day.</p>
+
+    <!-- Day Summary Key Numbers -->
+    <div class="complete-summary-grid">
+      <div class="summary-stat-box">
+        <span class="stat-box-label">WORKOUTS</span>
+        <strong class="stat-box-num">{{ workout_count }}</strong>
+      </div>
+      <div class="summary-stat-box">
+        <span class="stat-box-label">EXERCISES</span>
+        <strong class="stat-box-num">{{ total_exercises }}</strong>
+      </div>
+      <div class="summary-stat-box">
+        <span class="stat-box-label">COMPLETED SETS</span>
+        <strong class="stat-box-num">{{ completed_sets }}</strong>
+      </div>
+      <div class="summary-stat-box">
+        <span class="stat-box-label">TOTAL REPETITIONS</span>
+        <strong class="stat-box-num">{{ total_reps }}</strong>
+      </div>
+      {% if total_duration %}
+      <div class="summary-stat-box">
+        <span class="stat-box-label">DURATION</span>
+        <strong class="stat-box-num">{{ total_duration }}</strong>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Achievement Highlight: Total Weight Lifted -->
+    {% if total_volume %}
+    <div class="volume-achievement-card">
+      <div class="volume-icon">🏋️</div>
+      <div class="volume-text">
+        <span class="volume-label">TOTAL WEIGHT LIFTED</span>
+        <strong class="volume-value">{{ total_volume|floatformat:'-2' }} kg</strong>
+        <span class="volume-note">Calculated across all completed workouts on this day</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Session Breakdown for all workouts on this date -->
+    <div class="complete-exercises-list">
+      <h3>Session Breakdown</h3>
+      {% for session in workout_sessions %}
+      <div class="day-session-card" style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; background: #fcfdfc;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+          <div>
+            <strong style="color: #0f172a; font-size: 15px;">Workout</strong>
+            <span style="color: #64748b; font-size: 13px; margin-left: 8px;">{% if session.time %}{{ session.time }} • {% endif %}{{ session.focus }}</span>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-weight: 700; color: #006948;">{{ session.duration }}</span>
+          </div>
+        </div>
+        
+        {% for entry in session.entries %}
+        <article class="complete-exercise-item" style="border: none; padding: 6px 0;">
+          <div class="item-main">
+            <h4>{{ entry.exercise.name }}</h4>
+            <p>{{ entry.sets_planned }} sets · {{ entry.reps_planned }} repetitions{% if entry.exercise.is_bodyweight %} · Bodyweight{% else %} · {{ entry.exercise.get_equipment_type_display }}: {{ entry.weight|floatformat:'-2' }} kg{% endif %}</p>
+          </div>
+          <div class="item-badge">
+            {% if entry.exercise.is_bodyweight %}
+              <span class="badge badge-subtle">Bodyweight</span>
+            {% else %}
+              <span class="badge badge-primary">{{ entry.volume|floatformat:'-2' }} kg volume</span>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="complete-actions">
+      <a class="button wide primary-cta" href="{% url 'workout:progress' %}">
+        Back to Progress &amp; Analytics
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

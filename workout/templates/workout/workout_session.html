@@ -24,14 +24,22 @@
     </div>
     <div class="session-instructions-card">
       <h4>Movement Form</h4>
-      <p class="instructions">{{ entry.exercise.instructions }}</p>
+      {% if entry.exercise.instruction_steps %}
+        <ol class="movement-form-list">
+          {% for step in entry.exercise.instruction_steps %}
+            <li>{{ step }}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="instructions">{{ entry.exercise.instructions }}</p>
+      {% endif %}
     </div>
   </div>
 
   <!-- Right: Active Telemetry & Timer -->
   <div class="session-content">
     <div class="session-header">
-      <p class="eyebrow">{{ entry.exercise.body_part|upper }} · {{ entry.exercise.category|upper }}</p>
+      <p class="eyebrow">{% if entry.exercise.body_part|upper != entry.exercise.category|upper %}{{ entry.exercise.body_part|upper }} · {{ entry.exercise.category|upper }}{% else %}{{ entry.exercise.category|upper }}{% endif %}</p>
       <h1 class="exercise-title">{{ entry.exercise.name }}</h1>
     </div>
 

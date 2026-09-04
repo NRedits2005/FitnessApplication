@@ -6,31 +6,49 @@ from workout.models import DietMeal
 # The plans are data, not HTML: every goal gets its own seven-day set of meal slots.
 ROTATIONS = {
     'bulk': [
-        ('Oats, eggs and banana', 'Greek yogurt, fruit and nuts', 'Rice with chicken / paneer and vegetables', 'Banana with peanut butter', 'Roti with paneer / chicken and vegetables'),
-        ('Idli, sambar, eggs and fruit', 'Milk / soy milk with almonds', 'Rice with fish / tofu and vegetables', 'Curd with banana', 'Chapati with dal, paneer and vegetables'),
-        ('Poha, vegetable omelette and fruit', 'Greek yogurt with fruit', 'Brown rice with chicken / paneer and vegetables', 'Roasted chana and orange', 'Roti with chicken / tofu and vegetables'),
-        ('Dosa, sambar and curd', 'Banana and mixed nuts', 'Rice with rajma and vegetables', 'Peanut butter toast with fruit', 'Chapati with fish / paneer and vegetables'),
-        ('Oats with milk, fruit and seeds', 'Curd with walnuts', 'Rice with fish / paneer and vegetables', 'Yogurt with banana', 'Roti with paneer and vegetables'),
-        ('Upma, eggs and fruit', 'Fruit with peanuts', 'Rice with chicken / tofu and vegetables', 'Roasted chana with curd', 'Chapati with mixed vegetables and dal'),
-        ('Idli, sambar and fruit', 'Greek yogurt and nuts', 'Rice with dal, paneer and vegetables', 'Banana with peanut butter', 'Roti with paneer / chicken and vegetables'),
+        ('Oats with milk, banana + 2–3 eggs', 'Greek yogurt + almonds', 'Rice + chicken/paneer + vegetables', 'Peanut butter whole-grain toast + fruit', 'Roti + paneer/chicken + dal + vegetables'),
+        ('3–4 eggs + whole-grain toast + banana', 'Curd + mixed nuts', 'Brown rice + chicken/tofu + dal + vegetables', 'Banana + peanut butter', 'Chapati + paneer curry + vegetables'),
+        ('Vegetable dosa + sambar + eggs', 'Greek yogurt + banana + walnuts', 'Rice + fish/paneer + vegetables', 'Sprouts + fruit', 'Roti + chicken/tofu + dal'),
+        ('Vegetable upma + eggs + curd', 'Milk + banana + almonds', 'Rice + chicken/paneer + rajma + vegetables', 'Peanut butter sandwich + fruit', 'Chapati + fish/paneer + vegetables'),
+        ('Poha with peanuts + eggs + fruit', 'Greek yogurt + nuts', 'Brown rice + chicken/tofu + dal + vegetables', 'Milk + banana + peanut butter', 'Roti + paneer/chicken + vegetables'),
+        ('Oats + milk + banana + peanut butter + eggs', 'Curd + fruit + almonds', 'Rice + fish/chicken/paneer + dal + vegetables', 'Sprouts + whole-grain toast', 'Chapati + chicken/paneer + vegetables'),
+        ('Idli + sambar + eggs + fruit', 'Greek yogurt + banana + nuts', 'Rice + chicken/paneer + dal + vegetables', 'Peanut butter toast + milk', 'Roti + paneer/tofu + vegetables + curd'),
     ],
     'cut': [
-        ('Eggs, whole-grain toast and fruit', 'Apple with yogurt', 'Brown rice with lean protein and vegetables', 'Fruit with a small serving of nuts', 'Roti with dal and vegetables'),
-        ('Vegetable oats and curd', 'Guava with Greek yogurt', 'Rice with fish / tofu and vegetables', 'Roasted chana', 'Chapati with paneer / chicken salad'),
-        ('Poha with eggs and fruit', 'Orange with yogurt', 'Brown rice with dal and vegetables', 'Apple with almonds', 'Roti with tofu / chicken and vegetables'),
-        ('Dosa, sambar and fruit', 'Curd with berries / seasonal fruit', 'Rice with paneer / chicken and vegetables', 'Fruit with peanuts', 'Chapati with dal and mixed vegetables'),
-        ('Oats, milk and fruit', 'Apple with curd', 'Rice with fish / tofu and vegetables', 'Yogurt with banana', 'Roti with paneer and vegetables'),
-        ('Vegetable upma and eggs', 'Fruit with nuts', 'Brown rice with chicken / paneer and vegetables', 'Roasted chana with lemon', 'Vegetable soup with protein and roti'),
-        ('Idli, sambar and curd', 'Greek yogurt with fruit', 'Rice with dal and vegetables', 'Guava with peanuts', 'Roti with paneer / chicken and vegetables'),
+        ('Vegetable upma + 2 eggs', 'Apple + a small handful of almonds', 'Brown rice + chicken/paneer + vegetables', 'Roasted chana + lemon', 'Vegetable soup + paneer/chicken + 1–2 roti'),
+        ('Idli + sambar + curd', 'Greek yogurt + fruit', 'Rice + dal + vegetables + grilled chicken/tofu', 'Guava + peanuts', 'Roti + paneer/chicken + vegetables'),
+        ('Eggs + whole-grain toast + fruit', 'Apple + curd', 'Brown rice + lean chicken/tofu + vegetables', 'Fruit + a small handful of nuts', 'Roti + dal + mixed vegetables'),
+        ('Vegetable oats + curd', 'Guava + Greek yogurt', 'Rice + fish/paneer + vegetables', 'Roasted chana', 'Vegetable soup + 1–2 roti + protein'),
+        ('Poha with vegetables + eggs', 'Orange + yogurt', 'Brown rice + dal + vegetables + chicken/tofu', 'Apple + almonds', 'Roti + paneer + vegetables'),
+        ('Dosa + sambar + eggs', 'Fruit + curd', 'Rice + fish/chicken + vegetables', 'Roasted chana + fruit', 'Roti + dal + vegetables'),
+        ('Oats + milk + fruit + eggs', 'Greek yogurt + fruit', 'Brown rice + chicken/paneer + vegetables', 'Guava + a small handful of peanuts', 'Vegetable soup + dal + 1–2 roti'),
     ],
     'maintain': [
-        ('Oats with milk, fruit and seeds', 'Curd with fruit and nuts', 'Rice with dal / chicken and vegetables', 'Banana with peanuts', 'Roti with paneer / tofu and vegetables'),
-        ('Idli, sambar and fruit', 'Milk / soy milk with nuts', 'Rice with fish / paneer and vegetables', 'Curd with fruit', 'Chapati with dal and vegetables'),
-        ('Poha, eggs / tofu and fruit', 'Greek yogurt with fruit', 'Brown rice with rajma and vegetables', 'Roasted chana', 'Roti with chicken / paneer and vegetables'),
-        ('Dosa, sambar and curd', 'Banana with nuts', 'Rice with dal and vegetables', 'Peanut butter toast', 'Chapati with fish / tofu and vegetables'),
-        ('Oats, milk and banana', 'Curd with walnuts', 'Rice with paneer / chicken and vegetables', 'Fruit with yogurt', 'Roti with mixed vegetables and dal'),
-        ('Upma, eggs / tofu and fruit', 'Fruit with peanuts', 'Rice with chicken / paneer and vegetables', 'Roasted chana with curd', 'Chapati with vegetables and paneer'),
-        ('Idli, sambar and fruit', 'Greek yogurt and nuts', 'Rice with dal, paneer and vegetables', 'Banana with peanut butter', 'Roti with paneer / chicken and vegetables'),
+        ('Vegetable dosa + sambar + 2 eggs', 'Apple + Greek yogurt', 'Rice + dal + mixed vegetables + grilled chicken/paneer', 'Roasted chana + seasonal fruit', '2 roti + paneer/tofu + mixed vegetables'),
+        ('Oats with milk + banana + almonds', 'Guava + curd', 'Brown rice + chicken/tofu + vegetables', 'Fruit + small handful of peanuts', 'Chapati + dal + vegetable curry + curd'),
+        ('Idli + sambar + curd + fruit', 'Greek yogurt + mixed fruit', 'Rice + fish/paneer + vegetables', 'Apple + almonds', 'Roti + chicken/tofu + vegetable curry'),
+        ('Vegetable poha + 2 eggs + fruit', 'Banana + curd', 'Brown rice + dal + vegetables + paneer', 'Roasted chana + fruit', 'Chapati + chicken/fish + vegetables'),
+        ('Vegetable upma + eggs + curd', 'Orange + Greek yogurt', 'Rice + chicken/tofu + dal + vegetables', 'Apple + small handful of nuts', 'Roti + paneer + vegetables + curd'),
+        ('Whole-grain toast + vegetable omelette + fruit', 'Guava + peanuts', 'Brown rice + fish/chicken + vegetables', 'Greek yogurt + banana', 'Chapati + dal + mixed vegetables + paneer/tofu'),
+        ('Dosa + sambar + eggs + fruit', 'Curd + almonds + seasonal fruit', 'Rice + paneer/chicken + dal + vegetables', 'Roasted chana + banana', 'Roti + fish/tofu + vegetables + curd'),
+    ],
+    'strength': [
+        ('Oats with milk + banana + 3 eggs', 'Greek yogurt + banana + walnuts', 'Chicken + rice + dal + mixed vegetables', 'Peanut butter whole-grain toast + fruit', 'Roti + chicken/paneer + vegetables + curd'),
+        ('Vegetable omelette + whole-grain toast + fruit', 'Milk + banana + almonds', 'Brown rice + fish + vegetables + dal', 'Roasted chana + fruit', 'Chapati + paneer + vegetable curry + curd'),
+        ('Idli + sambar + 3 eggs + fruit', 'Greek yogurt + nuts', 'Rice + chicken + dal + vegetables', 'Banana + peanut butter', 'Roti + fish + vegetables + curd'),
+        ('Poha with peanuts + eggs + curd', 'Milk + banana + almonds', 'Rice + paneer + dal + mixed vegetables', 'Whole-grain toast + Greek yogurt', 'Chapati + chicken + vegetables + dal'),
+        ('Dosa + sambar + eggs + curd', 'Banana + Greek yogurt + walnuts', 'Brown rice + chicken + vegetables + dal', 'Roasted chana + fruit', 'Roti + paneer/tofu + vegetables + curd'),
+        ('Oats + milk + banana + peanut butter + eggs', 'Curd + fruit + almonds', 'Rice + fish/chicken + dal + vegetables', 'Peanut butter whole-grain toast + banana', 'Chapati + chicken/paneer + vegetables'),
+        ('Vegetable upma + eggs + curd + fruit', 'Greek yogurt + banana + nuts', 'Rice + chicken/paneer + dal + vegetables', 'Milk + banana + peanut butter', 'Roti + fish/tofu + vegetables + curd'),
+    ],
+    'fitness': [
+        ('Vegetable upma + 2 eggs + curd', 'Apple + Greek yogurt', 'Rice + dal + mixed vegetables + chicken/paneer', 'Roasted chana + seasonal fruit', '2 roti + paneer/tofu + mixed vegetables'),
+        ('Idli + sambar + curd + fruit', 'Guava + a small handful of almonds', 'Brown rice + chicken/tofu + vegetables', 'Banana + peanuts', 'Chapati + dal + vegetable curry + curd'),
+        ('Oats with milk + banana + nuts', 'Greek yogurt + seasonal fruit', 'Rice + fish/paneer + vegetables + dal', 'Roasted chana + fruit', 'Roti + chicken/tofu + mixed vegetables'),
+        ('Vegetable poha + 2 eggs + fruit', 'Apple + curd', 'Brown rice + dal + paneer + vegetables', 'Greek yogurt + banana', 'Chapati + chicken/fish + vegetables'),
+        ('Dosa + sambar + eggs + fruit', 'Guava + Greek yogurt', 'Rice + chicken/tofu + dal + vegetables', 'Apple + almonds', 'Roti + paneer + vegetable curry + curd'),
+        ('Whole-grain toast + vegetable omelette + fruit', 'Banana + curd + a few nuts', 'Brown rice + fish/chicken + vegetables', 'Roasted chana + seasonal fruit', 'Chapati + dal + paneer/tofu + vegetables'),
+        ('Vegetable oats + eggs + curd', 'Orange + Greek yogurt', 'Rice + paneer/chicken + dal + vegetables', 'Fruit + mixed nuts', 'Roti + fish/tofu + vegetables + curd'),
     ],
 }
 
@@ -42,8 +60,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         count = 0
-        for goal_index, goal in enumerate(('bulk', 'cut', 'maintain', 'strength', 'fitness')):
-            source = ROTATIONS['bulk'] if goal == 'strength' else ROTATIONS['maintain'] if goal == 'fitness' else ROTATIONS[goal]
+        for goal, source in ROTATIONS.items():
             for day, meals in enumerate(source):
                 complete = (*meals, 'Keep water nearby and drink regularly throughout the day.')
                 for slot, (meal_type, name) in enumerate(zip(MEAL_TYPES, complete)):
@@ -61,5 +78,11 @@ class Command(BaseCommand):
     def description(goal, meal_type, name):
         if meal_type == 'hydration':
             return 'A gentle hydration reminder; individual needs vary with weather and activity.'
-        goal_text = {'bulk': 'supports muscle-building energy with protein, carbohydrates and colourful produce', 'cut': 'keeps a satisfying balance of protein, fibre and whole foods', 'maintain': 'balances protein, carbohydrates, healthy fats and produce', 'strength': 'supports training energy and protein intake across the day', 'fitness': 'supports steady energy and balanced everyday nutrition'}[goal]
+        goal_text = {
+            'bulk': 'supports muscle-building energy with protein, carbohydrates and colourful produce',
+            'cut': 'keeps a satisfying balance of protein, fibre and whole foods',
+            'maintain': 'balances protein, carbohydrates, healthy fats and produce',
+            'strength': 'supports training energy and protein intake across the day',
+            'fitness': 'supports steady energy and balanced everyday nutrition',
+        }[goal]
         return f'{name} {goal_text}.'

@@ -201,6 +201,26 @@ class Exercise(models.Model):
             return self.muscles_targeted.split(',')[0].strip()
         return self.body_part
 
+    @property
+    def instruction_steps(self):
+        """Return instructions as a list of cleaned step strings."""
+        if not self.instructions:
+            return []
+        import re
+        raw = self.instructions.strip()
+        lines = [line.strip() for line in raw.split('\n') if line.strip()]
+        if len(lines) > 1:
+            steps = []
+            for line in lines:
+                cleaned = re.sub(r'^\d+[\.\)]\s*', '', line).strip()
+                if cleaned:
+                    steps.append(cleaned)
+            if steps:
+                return steps
+        parts = re.split(r'(?:^|\s+)\d+[\.\)]\s*', raw)
+        steps = [p.strip() for p in parts if p.strip()]
+        return steps if steps else [raw]
+
 
 class Workout(models.Model):
     user = models.ForeignKey(User, related_name='workouts', on_delete=models.CASCADE)
@@ -319,6 +339,10 @@ class DietMeal(models.Model):
     def get_image_url(self):
         from .diet_image_utils import get_diet_image_path
         return get_diet_image_path(self.name, self.meal_type)
+
+    def get_detail(self, profile=None):
+        from .diet_details import get_meal_details
+        return get_meal_details(self, profile)
 
 
 class WorkoutExercise(models.Model):

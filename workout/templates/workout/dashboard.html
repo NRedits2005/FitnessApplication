@@ -102,30 +102,37 @@
 </section>
 {% else %}
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXISTING GENERAL EXERCISES — For male / default users
+     MEN'S FITNESS — 4 Recommended Exercises
+     for male / default users
      ═══════════════════════════════════════════════════════════════════════ -->
-<!-- Recommended Exercises (Final Dashboard Section) -->
-<section class="recommendations">
-  <div class="section-title">
-    <h2>Recommended exercises</h2>
+<section class="mens-fitness-section">
+  <div class="mf-header">
+    <div class="mf-title-group">
+      <span class="mf-label">PERSONALIZED FOR YOU</span>
+      <h2>Men's Fitness</h2>
+      <p class="wf-subtitle">Top 4 recommended exercises curated for your goals and experience level.</p>
+    </div>
+    <a class="button wf-browse-btn" href="{% url 'workout:exercise_library' %}">Browse All Exercises</a>
   </div>
+
   <div class="exercise-grid">
     {% for exercise in plan.exercises %}
-    <article class="exercise-card">
+    <article class="exercise-card wf-card" data-name="{{ exercise.name|lower }}" data-bodypart="{{ exercise.body_part_tag }}">
       <div class="exercise-card-media">
         <img src="{{ exercise.image }}" alt="Exercise image for {{ exercise.name }}" onerror="this.onerror=null;this.src='{% url 'workout:exercise_visual' exercise.id %}';">
-        <span class="exercise-badge">{{ exercise.category }}</span>
+        <span class="exercise-badge wf-badge-bodypart">{{ exercise.body_part_tag|default:exercise.body_part }}</span>
       </div>
       <div class="exercise-card-body">
         <h3>{{ exercise.name }}</h3>
-        <p class="exercise-meta">{{ exercise.body_part }} · {{ exercise.get_equipment_type_display }}</p>
-        <p class="exercise-desc">{{ exercise.description|truncatechars:75 }}</p>
-        <a class="button exercise-cta" href="{% url 'workout:exercise_detail' exercise.id %}">View exercise</a>
+        <p class="exercise-meta">{{ exercise.muscles_targeted|default:exercise.body_part }} · {{ exercise.get_equipment_type_display }}</p>
+        <p class="exercise-desc">{{ exercise.description|truncatechars:80 }}</p>
+        {% if exercise.is_beginner_friendly or exercise.category == 'Beginner' or exercise.difficulty == 'beginner' %}<span class="wf-beginner-tag">✓ Beginner-friendly</span>{% endif %}
+        <a class="button exercise-cta" href="{% url 'workout:exercise_detail' exercise.id %}">View Details</a>
       </div>
     </article>
     {% empty %}
     <div class="empty-state">
-      <p>Update your available equipment in <a href="{% url 'workout:profile_edit' %}">Profile</a> to see suitable exercises.</p>
+      <p>No Men's Fitness exercises are available yet. Update your <a href="{% url 'workout:profile_edit' %}">profile equipment</a> to see compatible exercises.</p>
     </div>
     {% endfor %}
   </div>

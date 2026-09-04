@@ -36,9 +36,9 @@ def get_available_exercises(profile):
 
     # --- Gender-based visibility ---
     if profile.gender == 'female':
-        exercises = exercises.filter(gender_category__in=['female', 'all'])
+        exercises = exercises.filter(gender_category__in=['female', 'all']).exclude(name__in=['Leg Raise', 'Bicycle Crunch'])
     elif profile.gender == 'male':
-        exercises = exercises.filter(gender_category__in=['male', 'all'])
+        exercises = exercises.filter(gender_category__in=['male', 'all']).exclude(name__in=['Chest Fly Machine', 'Standing Calf Raise', 'Hanging Leg Raise'])
     else:
         # Prefer-not-to-say is intentionally neutral: do not infer either
         # gender-specific experience from an unset/private profile value.
@@ -164,7 +164,19 @@ def diet_meals(profile, date=None):
     meals = list(DietMeal.objects.filter(goal=profile.goal, day_of_week=date.weekday()))
     meals.sort(key=lambda meal: MEAL_ORDER.index(meal.meal_type))
     from .diet_image_utils import attach_diet_images
-    return attach_diet_images(meals)
+    meals = attach_diet_images(meals)
+    from .diet_details import get_meal_details
+    import json
+    for meal in meals:
+        detail = get_meal_details(meal, profile)
+        meal.detail = detail
+        if detail:
+            detail_copy = dict(detail)
+            detail_copy['image'] = getattr(meal, 'image', '')
+            detail_copy['id'] = meal.id
+            detail_copy['meal_type_display'] = meal.get_meal_type_display()
+            meal.detail_json = json.dumps(detail_copy)
+    return meals
 
 
 def diet_for(profile):
